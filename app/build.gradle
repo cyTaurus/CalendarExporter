@@ -46,7 +46,7 @@ java {
 
 application {
     // Define the main class for the application.
-    mainClass = 'calendar.Main' //es kann sein dass ich das ändern muss zum Namen der Main Klasse?
+    mainClass = 'calendar.Main' 
     version = '1.0'
 }
 

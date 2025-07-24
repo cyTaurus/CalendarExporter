@@ -7,7 +7,6 @@ import java.awt.Dimension;
 
 import javax.swing.*;
 
-//Problem: parent ist null => das DARF nicht sein, sonst führt das zu einer NullPointerException in Settings
 
 public class Settings extends JFrame {
 
@@ -36,9 +35,9 @@ public class Settings extends JFrame {
         
         //Datumsauswal Bis
         SpinnerDateModel endModel = new SpinnerDateModel();
-        JSpinner EndSpinner = new JSpinner(endModel);
-        JSpinner.DateEditor endEditor = new JSpinner.DateEditor(EndSpinner, "yyyy-MM-dd");
-        EndSpinner.setEditor(endEditor);
+        JSpinner endSpinner = new JSpinner(endModel);
+        JSpinner.DateEditor endEditor = new JSpinner.DateEditor(endSpinner, "yyyy-MM-dd");
+        endSpinner.setEditor(endEditor);
         
         add(new JLabel("Von"));
         add(startSpinner);
