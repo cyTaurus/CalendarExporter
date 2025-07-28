@@ -78,8 +78,8 @@ public class GoogleServices {
     //returns an authorized Credential object.
     return credential;
   }
-  public static List<Event> fetchEvents(Calendar service, DateTime timeMin, DateTime timeMax) throws IOException{
-    Events events = service.events().list("primary")
+  public static List<Event> fetchEvents(Calendar service, String calendarId, DateTime timeMin, DateTime timeMax) throws IOException{
+    Events events = service.events().list(calendarId)
     .setTimeMin(timeMin)
     .setTimeMax(timeMax)
     .setOrderBy("startTime")

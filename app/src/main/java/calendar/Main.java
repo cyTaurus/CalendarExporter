@@ -46,12 +46,15 @@ public class Main {
     //Umwandeln der Daten in das DateTime-Format   
     DateTime timeMin = new DateTime(startDateStr + "T00:00:00Z");
     DateTime timeMax = new DateTime(endDateStr + "T23:59:59Z");
+    String calendarId = "primary"; //später dynamisch statt hardcoded
+
 
     //Kalenderdienst
     Calendar service = GoogleServices.getCalendarService();
+    
 
     //Liste aller Events 
-    List<Event> items = GoogleServices.fetchEvents(service, timeMin, timeMax);
+    List<Event> items = GoogleServices.fetchEvents(service, calendarId, timeMin, timeMax);
    
     //Schreiben der Events in die .ics Datei
     ICalExport.writeICal(items, outputFile);

@@ -3,8 +3,8 @@ package calendar.swingGUI;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Dimension;
-import java.awt.event.*;
-import java.io.IOException;
+//import java.awt.event.*;
+//import java.io.IOException;
 import java.util.List;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.client.util.DateTime;
@@ -12,7 +12,7 @@ import com.google.api.services.calendar.Calendar;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-
+import java.util.Date;
 import calendar.GoogleServices;
 
 //TO DO:
@@ -94,9 +94,17 @@ public class MainWindow extends JFrame {
     } 
 
     //Methode, um die Tabelle mit allen Events aus dem angegebenen Zeitraum zu befüllen
-    public void calendarData(Calendar service, DateTime startDate, DateTime endDate) throws IOException{
-        List<Event> events = GoogleServices.fetchEvents(service, startDate, endDate);
-        updateTable(events);
+    public void loadAndDisplayData(String calendarId, Date start, Date end) {
+        try {
+            Calendar service = GoogleServices.getCalendarService();
+            DateTime startDate = new DateTime(start);
+            DateTime endDate = new DateTime(end);
+
+            List<Event> events = GoogleServices.fetchEvents(service, calendarId, startDate, endDate);
+            updateTable(events);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     //-------------------------------------------//
@@ -146,9 +154,9 @@ public class MainWindow extends JFrame {
     //                 TABELLE                   //
     //-------------------------------------------//
 
-        DefaultTableModel tableModel = new DefaultTableModel(new Object[]{"Ereignis", "Von", "Bis","Beschreibung"},0);
+        tableModel = new DefaultTableModel(new Object[]{"Ereignis", "Von", "Bis","Beschreibung"},0);
 
-        JTable table = new JTable(tableModel);
+        eventTable = new JTable(tableModel);
 
         //Position anpassen & Funktion geben!
         this.add(new JButton("Save"));
@@ -160,7 +168,7 @@ public class MainWindow extends JFrame {
 
         //MainWindow zusammenbauen
         this.setLayout(new FlowLayout());
-        this.add(new JScrollPane(table));
+        this.add(new JScrollPane(eventTable));
         this.setJMenuBar(menuBar);
         
 
