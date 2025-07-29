@@ -43,6 +43,6 @@ public class About extends JFrame{
   //-------------------------------------------//
 
     private String getAboutText() {
-        return "<html><center>" + "Entwickler: Sarah Josuweit<br>" + "Projektarbeit 'Programmieren in Java'<br>" + "DHBW Mannheim AI2" +"</center></html>"; 
+        return "<html><center>" + "Entwickler: S.J.<br>" + "Projektarbeit 'Programmieren in Java'<br>" + "DHBW AI2" +"</center></html>"; 
     }
 }
