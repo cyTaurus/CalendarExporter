@@ -5,6 +5,8 @@ import java.awt.Dimension;
 import java.util.Date;
 import javax.swing.*;
 
+import java.awt.BorderLayout;
+
 
 public class Settings extends JFrame {
 
@@ -21,10 +23,8 @@ public class Settings extends JFrame {
         this.setPreferredSize(new Dimension(300,200));
         this.setBackground(Color.DARK_GRAY);
         this.setLocationRelativeTo(null);
-        
+        this.setResizable(false);
 
-        //Textfeld zum Eintragen der Kalender-URL
-        textField = new JTextField(20); 
 
         //Datumsauswahl Von
         SpinnerDateModel startModel = new SpinnerDateModel();
@@ -37,23 +37,53 @@ public class Settings extends JFrame {
         endSpinner = new JSpinner(endModel);
         JSpinner.DateEditor endEditor = new JSpinner.DateEditor(endSpinner, "yyyy-MM-dd");
         endSpinner.setEditor(endEditor);
+
+    //-------------------------------------------//
+    //               LAYOUT                      //
+    //-------------------------------------------//
+
+        this.setLayout(new BorderLayout());
         
-        add(new JLabel("Von"));
-        add(startSpinner);
-        add(new JLabel("Bis"));
-        add(endSpinner);
-        add(new JLabel("Kalender-URL"));
-        this.add(textField);
+        //GUI-Elemente
+
+        //Textfeld zum Eintragen der Kalender-URL
+        textField = new JTextField(20);
         
+        JLabel vonLabel = new JLabel("Von");
+        JLabel bisLabel = new JLabel("Bis");
+        JLabel idLabel = new JLabel("Kalender-ID");
+        idLabel.setToolTipText("If you don't know your calendar-ID, and you only have one Google Calendar, it's probably 'primary'");
+
         //Buttons
         JButton okButton = new JButton("OK");
-        okButton.addActionListener(e -> okClick());
-
         JButton cancelButton = new JButton("Cancel");
+
+        okButton.addActionListener(e -> okClick());
         cancelButton.addActionListener(e -> dispose());
 
-        this.add(okButton);
-        this.add(cancelButton);
+        //Panels
+        JPanel datePanel = new JPanel();
+        datePanel.add(vonLabel);
+        datePanel.add(startSpinner);
+        datePanel.add(bisLabel);
+        datePanel.add(endSpinner);
+        add(datePanel, BorderLayout.NORTH);
+
+        JPanel textPanel = new JPanel();
+        textPanel.add(idLabel);
+        textPanel.add(textField);
+        add(textPanel, BorderLayout.CENTER);
+        
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(okButton);
+        buttonPanel.add(cancelButton);
+        add(buttonPanel, BorderLayout.SOUTH);
+
+       
+        
+        
+
+      
 
 
         //Settings ausgeben
@@ -82,7 +112,7 @@ public class Settings extends JFrame {
             JOptionPane.showMessageDialog(this, "End date cannot be before start date!");
             return;
         }
-        
+
         parent.fetchData(calendarId, start, end);
         dispose();
     }

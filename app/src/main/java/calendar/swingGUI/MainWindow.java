@@ -10,7 +10,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.awt.Dimension;
 //import java.awt.event.*;
-//import java.io.IOException;
 import java.util.List;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
@@ -26,6 +25,8 @@ import java.util.Date;
 import calendar.GoogleServices;
 
 import java.awt.Component;
+
+import java.awt.BorderLayout;
 
 
 public class MainWindow extends JFrame {
@@ -294,12 +295,12 @@ public void loadTable(JTable table, String filePath) {
 
         //Menü (Application)
         JMenu menuApp = new JMenu("Application");
-        menuBar.add(menuApp);
+        
 
         //Menü zu Settings
         JMenuItem settings = new JMenuItem("Settings");
         settings.addActionListener(e -> openSettings()); //beim Settings-Feld einen Action Listener registrieren
-        menuApp.add(settings);
+        
 
     //-------------------------------------------//
     //                MENÜ (HELP)                //
@@ -307,12 +308,11 @@ public void loadTable(JTable table, String filePath) {
 
         //Menü (Help)
         JMenu menuHelp = new JMenu("Help");
-        menuBar.add(menuHelp);
-
-        //Menü zu About
+        
+         //Menü zu About
         JMenuItem about = new JMenuItem("About");
         about.addActionListener(e -> openAbout()); 
-        menuHelp.add(about);
+        
 
     //-------------------------------------------//
     //                 TABELLE                   //
@@ -320,7 +320,7 @@ public void loadTable(JTable table, String filePath) {
 
         tableModel = new DefaultTableModel(new Object[]{"Ereignis", "Von", "Bis","Beschreibung"},0);
         eventTable = new JTable(tableModel);
-        eventTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS); //funktioniert noch nicht :/
+        eventTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS); 
         
         //Tabellendaten aus SavedEvents.csv laden
         String filePath = "data/SavedEvents.csv";
@@ -329,22 +329,40 @@ public void loadTable(JTable table, String filePath) {
         //Buttons
         JButton saveButton = new JButton("Save");
         saveButton.addActionListener(e -> saveTable(eventTable, filePath));
-        this.add(saveButton);
-
+        
         JButton exitButton = new JButton("Exit");
         exitButton.addActionListener(e -> dispose());
-        this.add(exitButton);
+        
         
 
     //-------------------------------------------//
-    //               HAUPTFENSTER                //
+    //                 LAYOUT                    //
     //-------------------------------------------//
 
-        //MainWindow zusammenbauen
-        this.setLayout(new FlowLayout());
-        this.add(new JScrollPane(eventTable));
+        this.setLayout(new BorderLayout());
+
+        //GUI-Elemente
+
+        //Menü
         this.setJMenuBar(menuBar);
-        
+        menuBar.add(menuApp);
+        menuApp.add(settings);
+        menuBar.add(menuHelp);
+        menuHelp.add(about);
+
+        //Tabelle
+        JPanel tablePanel = new JPanel();
+        tablePanel.setLayout(new BorderLayout());
+        JScrollPane scrollPane = new JScrollPane(eventTable);
+        this.add(new JScrollPane(eventTable));
+        tablePanel.add(scrollPane, BorderLayout.CENTER);
+
+        //Buttons
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(saveButton);
+        buttonPanel.add(exitButton);
+        add(buttonPanel, BorderLayout.SOUTH);
+
 
         //MainWindow ausgeben
         this.pack();
