@@ -13,28 +13,20 @@ import java.awt.Dimension;
 //import java.io.IOException;
 import java.util.List;
 import com.google.api.services.calendar.model.Event;
+import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.Calendar;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
 import java.util.Date;
 import calendar.GoogleServices;
 
-//TO DO:
-//alles nötige kommentieren
-//Überprüfe, ob ich this.set nicht ohne this schreiben kann
-//ZWEITES MENÜ: File, mit Save&Exit bzw. würd ich es eig. lieber mit Buttons machen... 
-//Starten im Fullscreen / öffnen in Mitte des Bildschirms
-//evtl. Settings & About öffnen im selben Fenster wie MainWindow statt öffnen separater Fenster (dann braucht man die methoden nicht mehr)
-// Tabelle befüllen lassen durch User
-//Design! aber erst als letztes :(
-//OPTIONAL:
-//Settings.java: Input-Validierung
-//Settings.java: Datumseingabe mit JSpinner
-//Einstellungen speichern und beim nächsten öffnen des Programms laden
+import java.awt.Component;
+
 
 public class MainWindow extends JFrame {
     
@@ -116,6 +108,13 @@ public class MainWindow extends JFrame {
             List<Event> events = GoogleServices.fetchEvents(service, calendarId, startDate, endDate);
             //Übergabe der Daten an updateTable
             updateTable(events);
+        } catch (GoogleJsonResponseException e) {
+            //prüfe auf invalide Kalender-ID
+            if (e.getStatusCode() == 404) {
+                JOptionPane.showMessageDialog(null, "Calendar-ID is not valid!", "Error", JOptionPane.ERROR_MESSAGE);
+            } else {
+                e.printStackTrace();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -157,11 +156,12 @@ public class MainWindow extends JFrame {
             fileWriter.newLine();
         }
 
-        System.out.println("Tabelle gespeichert in: " + filePath);
+        System.out.println("Table saved in: " + filePath);
     } catch (IOException e) {
         e.printStackTrace();
     }
 }
+
 
 //lädt gespeicherte Daten
 public void loadTable(JTable table, String filePath) {
@@ -204,6 +204,69 @@ public void loadTable(JTable table, String filePath) {
             System.out.println("Table loaded!");
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    //*****************//
+   //  File Chooser  //
+   //****************//
+
+   //der Nutzer soll den Speicherort und Namen der Datei selber wählen können
+   public String customSaveFile(Component parent) {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Select storage location");
+
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("CSV-Dateien","csv");
+        fileChooser.setFileFilter(filter);
+
+        int userSelection = fileChooser.showSaveDialog(parent); 
+
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            File saveFile = fileChooser.getSelectedFile();
+            String filePath = saveFile.getAbsolutePath();
+
+            if (!filePath.endsWith(".csv")) {
+                filePath += ".csv";
+            }
+            saveTable(eventTable, filePath);
+            writeLastPath(filePath);
+            return filePath;
+            
+        } 
+        return null; //Abbruch
+    }
+
+   //*****************//
+   //  Path to File  //
+   //****************//
+
+    //Speichern des vom Nutzer gewähltem Pfad zur CSV Datei
+    public void writeLastPath(String path) {
+        File dir = new File("data");
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+
+        File lastPathFile = new File(dir, "lastpath.txt");
+
+
+        try (BufferedWriter pathWrite = new BufferedWriter(new FileWriter(lastPathFile))) {
+            pathWrite.write(path);
+        } catch (IOException e) {
+        e.printStackTrace();
+        }  
+    } 
+
+    //laden der CSV Datei vom gespeicherten Pfad
+    public String readLastPath() {
+        File lastPathFile = new File("data/lastpath.txt");
+        if (!lastPathFile.exists()) return null;
+
+        try (BufferedReader pathReader = new BufferedReader(new FileReader(lastPathFile))) {
+            return pathReader.readLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 
