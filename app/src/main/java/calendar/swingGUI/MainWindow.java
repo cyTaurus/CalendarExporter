@@ -1,7 +1,6 @@
 package calendar.swingGUI;
 
 import java.awt.Color;
-import java.awt.FlowLayout;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -322,13 +321,17 @@ public void loadTable(JTable table, String filePath) {
         eventTable = new JTable(tableModel);
         eventTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS); 
         
-        //Tabellendaten aus SavedEvents.csv laden
-        String filePath = "data/SavedEvents.csv";
-        loadTable(eventTable, filePath);
+        //Tabellendaten laden aus letzter gespeicherter Datei
+          String lastPath = readLastPath();
+        if (lastPath != null && new File(lastPath).exists()) {
+            loadTable(eventTable, lastPath);
+        } else {
+            System.out.println("Keine gespeicherte Datei gefunden");
+        }
 
         //Buttons
         JButton saveButton = new JButton("Save");
-        saveButton.addActionListener(e -> saveTable(eventTable, filePath));
+        saveButton.addActionListener(e ->  {String selectedPath = customSaveFile(this); if (selectedPath != null) {saveTable(eventTable, selectedPath);}});
         
         JButton exitButton = new JButton("Exit");
         exitButton.addActionListener(e -> dispose());
