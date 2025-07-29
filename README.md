@@ -12,7 +12,8 @@ Mit dem Kalender-Exporter kann man alle Ereignisse zwischen einem angegebenen Ze
 *Syntax:* <br> 
 java Main Startdatum Enddatum Outputdatei <br>
 **oder** <br>
-gradlew run --args="Startdatum Enddatum OutputDatei.ics" (im Terminal im Verzeichnis, in dem auch gradlew liegt, ausführen!)
+gradlew run --args="Startdatum Enddatum OutputDatei.ics" <br>
+(im Terminal im Verzeichnis, in dem auch gradlew liegt, ausführen!) <br>
 *Format Datum:* YYYY-MM-DD
 
 Es ist auch eine grafische Benutzeroberfläche vorhanden. 
