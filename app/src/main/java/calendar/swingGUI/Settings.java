@@ -1,7 +1,6 @@
 package calendar.swingGUI;
 
 import java.awt.Color;
-import java.awt.FlowLayout;
 import java.awt.Dimension;
 import java.util.Date;
 import javax.swing.*;
@@ -19,10 +18,10 @@ public class Settings extends JFrame {
         this.parent = parent;
         this.setTitle("Settings");
         this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        this.setPreferredSize(new Dimension(900,500));
+        this.setPreferredSize(new Dimension(300,200));
         this.setBackground(Color.DARK_GRAY);
         this.setLocationRelativeTo(null);
-        this.setLayout(new FlowLayout());
+        
 
         //Textfeld zum Eintragen der Kalender-URL
         textField = new JTextField(20); 
@@ -61,15 +60,29 @@ public class Settings extends JFrame {
         this.pack();
         this.setVisible(true);
     }
-    
+
     //-------------------------------------------//
     //               METHODEN                    //
     //-------------------------------------------//
 
     private void okClick() {
         String calendarId = textField.getText();
+
+        //Inputvalidierung: Ist die Kalender-ID ausgefüllt?
+         if (calendarId.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Enter valid calendar-ID!");
+            return;
+        }
+
         Date start = (Date) startSpinner.getValue();
         Date end = (Date) endSpinner.getValue();
+
+        //Inputvalidierung: liegt Start zeitlich vor Ende?
+         if (!start.before(end)) {
+            JOptionPane.showMessageDialog(this, "End date cannot be before start date!");
+            return;
+        }
+        
         parent.fetchData(calendarId, start, end);
         dispose();
     }
