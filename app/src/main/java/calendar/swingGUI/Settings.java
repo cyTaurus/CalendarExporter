@@ -3,7 +3,6 @@ package calendar.swingGUI;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Dimension;
-//import java.awt.event.*;
 import java.util.Date;
 import javax.swing.*;
 
@@ -26,7 +25,7 @@ public class Settings extends JFrame {
         this.setLayout(new FlowLayout());
 
         //Textfeld zum Eintragen der Kalender-URL
-        textField = new JTextField(20); //200 ist VIEL zu lang
+        textField = new JTextField(20); 
 
         //Datumsauswahl Von
         SpinnerDateModel startModel = new SpinnerDateModel();
@@ -49,23 +48,29 @@ public class Settings extends JFrame {
         
         //Buttons
         JButton okButton = new JButton("OK");
-        JButton cancelButton = new JButton("Cancel");
-
         okButton.addActionListener(e -> okClick());
-        //cancelButton.addActionListener(e -> CancelClick()); //not yet implemented
+
+        JButton cancelButton = new JButton("Cancel");
+        cancelButton.addActionListener(e -> dispose());
 
         this.add(okButton);
+        this.add(cancelButton);
+
 
         //Settings ausgeben
         this.pack();
         this.setVisible(true);
     }
-    //Hilfsmethoden
+    
+    //-------------------------------------------//
+    //               METHODEN                    //
+    //-------------------------------------------//
+
     private void okClick() {
         String calendarId = textField.getText();
         Date start = (Date) startSpinner.getValue();
         Date end = (Date) endSpinner.getValue();
-        parent.loadAndDisplayData(calendarId, start, end);
+        parent.fetchData(calendarId, start, end);
         dispose();
     }
 }

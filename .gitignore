@@ -7,6 +7,9 @@ build
 # --- VS Code ---#
 .vscode/
 
+# -- Andere Dateien --#
+SavedEvents.csv
+
 # --- sensibel ---#
 .src/resources/credentials.json
 .tokens/

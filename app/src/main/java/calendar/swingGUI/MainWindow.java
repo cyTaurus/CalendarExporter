@@ -2,6 +2,12 @@ package calendar.swingGUI;
 
 import java.awt.Color;
 import java.awt.FlowLayout;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.awt.Dimension;
 //import java.awt.event.*;
 //import java.io.IOException;
@@ -12,6 +18,8 @@ import com.google.api.services.calendar.Calendar;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+
 import java.util.Date;
 import calendar.GoogleServices;
 
@@ -34,18 +42,24 @@ public class MainWindow extends JFrame {
     //               METHODEN                    //
     //-------------------------------------------//
 
+    //********************//
+    // Instanzvariablen   //
+    //********************//
 
-    //Tabelle Instanzariablen
+    //Tabelle
     private DefaultTableModel tableModel;
-    private JTable eventTable;                  //???
+    private JTable eventTable;                  
 
     //besagt, dass noch kein Settings-Fenster geöffnet ist
     private Settings settingsWindow = null;
     //besagt, dass noch kein About-Fenster geöffnet ist
     private About aboutWindow = null;
 
-    //Settings öffnen. Es muss geprüft werden, ob ein Settings Window schon auf ist, 
-    //ansonsten kann ein User die Fenster beliebig oft öffnen (schlecht :) )
+    //********************//
+    //      Settings      //
+    //********************//
+
+    //Settings öffnen. Es muss geprüft werden, ob ein Settings Window schon auf ist, ansonsten kann ein User die Fenster beliebig oft öffnen
     private void openSettings() {
         if (settingsWindow == null || !settingsWindow.isDisplayable()) {
             settingsWindow = new Settings(this);
@@ -55,8 +69,11 @@ public class MainWindow extends JFrame {
         }
     }
 
-    //About öffnen. Es muss geprüft werden, ob ein About Window schon auf ist, 
-    //ansonsten kann ein User die Fenster beliebig oft öffnen (schlecht :) )
+    //********************//
+    //      About         //
+    //********************//
+
+    //About öffnen. Es muss geprüft werden, ob ein About Window schon auf ist, ansonsten kann ein User die Fenster beliebig oft öffnen
     private void openAbout() {
         if (aboutWindow == null || !aboutWindow.isDisplayable()) {
             aboutWindow = new About();
@@ -66,46 +83,130 @@ public class MainWindow extends JFrame {
         }
     }
 
+    //********************//
+    //      Tabelle       //
+    //********************//
+
+    //Anzeigen der Events in der Tabelle
     public void updateTable(List<Event> events) {
-        tableModel.setRowCount(0);
+       DefaultTableModel model = (DefaultTableModel) eventTable.getModel();
 
-        for (Event event: events) {
-            String title = event.getSummary();
-            String description = event.getDescription();
-            
-            DateTime start = event.getStart().getDateTime();
-            DateTime end = event.getEnd().getDateTime();
-
-            //ganztägig
-            if (start == null) {
-                start = event.getStart().getDate();
-            }
-            if (end == null) {
-                end = event.getEnd().getDate();
-            }
-
-            //Formatierung
-            String startStr = start.toStringRfc3339();
-            String endStr = end.toStringRfc3339();
-
-            //Hinzufügen
-            tableModel.addRow(new Object[]{title, startStr, endStr, description});
+        for (Event event : events) {
+            //prüfe, ob start bzw. end ganztägig sind. Wenn ja: getDateTime. Wenn nein: getDate. 
+            String start = (event.getStart().getDateTime() != null) ? event.getStart().getDateTime().toStringRfc3339() : event.getStart().getDate().toStringRfc3339();
+            String end = (event.getEnd().getDateTime() != null) ? event.getEnd().getDateTime().toStringRfc3339() : event.getEnd().getDate().toStringRfc3339();
+            //prüfe, ob es eine Summary bzw. eine Description gibt. Wenn ja: Summary bzw. Description wird geholt. Wenn nein: schreibe einen leeren String (Vermeidung NullPointerExceptions)
+            String summary = event.getSummary() != null ? event.getSummary() : "";
+            String description = event.getDescription() != null ? event.getDescription() : "";
+            //neue Zeile mit Startdatum, Enddatum, Summary und Description zur Tabelle hinzufügen
+            model.addRow(new Object[] {start, end, summary, description});
         }
     } 
 
-    //Methode, um die Tabelle mit allen Events aus dem angegebenen Zeitraum zu befüllen
-    public void loadAndDisplayData(String calendarId, Date start, Date end) {
+    //Methode, um die Events aus dem Kalender zu holen
+    public void fetchData(String calendarId, Date start, Date end) {
         try {
+            //Zugang zu Google Kalender
             Calendar service = GoogleServices.getCalendarService();
+            //Umwandlung der Daten in DateTime, sd. die API sie verwenden kann
             DateTime startDate = new DateTime(start);
             DateTime endDate = new DateTime(end);
 
+            //holt alle Events basierend auf den Übergabewerten
             List<Event> events = GoogleServices.fetchEvents(service, calendarId, startDate, endDate);
+            //Übergabe der Daten an updateTable
             updateTable(events);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+    //*********************//
+    // Speichern und Laden //
+    //*********************//
+
+    //Tabelleninhalt speichern 
+    public void saveTable(JTable table, String filePath) {
+    //öffne die Datei zum Schreiben, sowie die Spalten und Zeilen aus der Tabelle
+    try (BufferedWriter fileWriter = new BufferedWriter(new FileWriter(filePath))) {
+        TableModel model = table.getModel();
+        int columnCount = model.getColumnCount();
+        int rowCount = model.getRowCount();
+
+        //speichert die Überschriften der Spalten
+        for (int i = 0; i < columnCount; i++) {
+            fileWriter.write(model.getColumnName(i));
+            if (i < columnCount - 1) fileWriter.write(",");
+        }
+        fileWriter.newLine();
+
+        //Iteration über jede Zelle in der Tabelle
+        for (int row = 0; row < rowCount; row++) {
+            for (int col = 0; col < columnCount; col++) {
+                //holt den Inhalt einer Zelle. Wenn sie leer ist (zB bei Beschreibungen), dann speichere darin einen leeren String (um NullPointerExceptions zu vermeiden)
+                Object value = model.getValueAt(row, col);
+                String safe = (value != null) ? value.toString() : "";  
+                //Wenn in der Zelle ein Komma steht, dann ...
+                if (safe.contains(",")) {
+                    safe = "\"" + safe.replace("\"", "\"\"") + "\"";
+                }
+                //schreibt den Zelleninhalt in die Datei. Am Ende jeder Zelle (bis auf die letzte Spalte) wird ein Komma eingefügt für erhöhte Lesbarkeit
+                fileWriter.write(safe);
+                if (col < columnCount - 1) fileWriter.write(",");
+            }
+            fileWriter.newLine();
+        }
+
+        System.out.println("Tabelle gespeichert in: " + filePath);
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+}
+
+//lädt gespeicherte Daten
+public void loadTable(JTable table, String filePath) {
+        //prüfe, ob die Datei existiert. Wenn nicht, einfach Methode beenden.
+        File file = new File(filePath);
+        if (!file.exists()) return;
+
+        //öffne und lese die Datei
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            //hole die tabelle
+            DefaultTableModel model = (DefaultTableModel) eventTable.getModel();
+            //model.setRowCount(0);
+            //eine Zeile in der Datei 
+            String line;
+            //Spaltenüberschrift
+            boolean firstLine = true;
+
+            //lese jede Zeile, bis es keine mehr gibt
+            while ((line = reader.readLine()) != null) {
+                //Spaltenüberschrift muss nicht extra nochmal geladen werden, diese ist bei der Tabelle fest mit dabei. firstLine ist damit "abgehakt"
+                if (firstLine) {
+                    firstLine = false;
+                    continue;
+                }
+                //jede Zeile in der CSV-Datei wird nach einem Komma gespalten. Die -1 ist nötig, damit auch leere Zellen beibehalten werden
+                String[] values = line.split(",", -1); 
+                //prüfe, ob weniger Spalten befüllt sind, als die erwarteten vier
+                if (values.length < model.getColumnCount()) {
+                    //erstelle ein Array mit der passenden Spaltenanzahl
+                    String[] fill = new String[model.getColumnCount()];
+                    //kopiere alle Werte in das Array fill
+                    System.arraycopy(values, 0, fill, 0, values.length);
+                    //füge die gefüllte Zeile zu der Tabelle hinzu
+                    model.addRow(fill);
+                } else {
+                //wenn alle Spalten befüllt sind, kann man die Werte direkt in die Zeile einfügen
+                model.addRow(values);
+                }
+            }
+            System.out.println("Table loaded!");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     //-------------------------------------------//
     //               HAUPTFENSTER                //
@@ -155,12 +256,22 @@ public class MainWindow extends JFrame {
     //-------------------------------------------//
 
         tableModel = new DefaultTableModel(new Object[]{"Ereignis", "Von", "Bis","Beschreibung"},0);
-
         eventTable = new JTable(tableModel);
+        eventTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS); //funktioniert noch nicht :/
+        
+        //Tabellendaten aus SavedEvents.csv laden
+        String filePath = "data/SavedEvents.csv";
+        loadTable(eventTable, filePath);
 
-        //Position anpassen & Funktion geben!
-        this.add(new JButton("Save"));
-        this.add(new JButton("Exit"));
+        //Buttons
+        JButton saveButton = new JButton("Save");
+        saveButton.addActionListener(e -> saveTable(eventTable, filePath));
+        this.add(saveButton);
+
+        JButton exitButton = new JButton("Exit");
+        exitButton.addActionListener(e -> dispose());
+        this.add(exitButton);
+        
 
     //-------------------------------------------//
     //               HAUPTFENSTER                //
