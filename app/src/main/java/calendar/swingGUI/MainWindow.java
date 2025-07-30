@@ -40,7 +40,12 @@ public class MainWindow extends JFrame {
 
     //Tabelle
     private DefaultTableModel tableModel;
-    private JTable eventTable;                  
+    private JTable eventTable; 
+    
+    //Pfad zur zuletzt gespeicherten CSV Datei
+    private String lastPath;
+    
+    private boolean unsavedChanges = false;
 
     //besagt, dass noch kein Settings-Fenster geöffnet ist
     private Settings settingsWindow = null;
@@ -157,6 +162,7 @@ public class MainWindow extends JFrame {
         }
 
         System.out.println("Table saved in: " + filePath);
+        unsavedChanges = false;
     } catch (IOException e) {
         e.printStackTrace();
     }
@@ -237,16 +243,18 @@ public void loadTable(JTable table, String filePath) {
     }
 
    //*****************//
-   //  Path to File  //
-   //****************//
+   //  Path to File   //
+   //*****************//
 
     //Speichern des vom Nutzer gewähltem Pfad zur CSV Datei
     public void writeLastPath(String path) {
+        //die Datei soll aufgrund von Übersicht in einen data-Folder
+        //dieser wird erstmal erstellt, sollte er noch nicht existieren
         File dir = new File("data");
         if (!dir.exists()) {
             dir.mkdirs();
         }
-
+        //in data wird lastpath.txt erstellt. Dieser enthält den Pfad zur CSV-Datei
         File lastPathFile = new File(dir, "lastpath.txt");
 
 
@@ -270,6 +278,55 @@ public void loadTable(JTable table, String filePath) {
         }
     }
 
+    //*****************//
+    //    LÖSCHEN      //
+    //*****************//
+
+    //Zeile aus Tabelle löschen
+    private void deleteRow() {
+        int selectedRow = eventTable.getSelectedRow();
+
+        //sicherstellen, dass Nutzer die Zeile auch wirklich löschen möchte
+        if (selectedRow != -1) {
+            int confirm = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete the selected row?", "Confirm Delete", JOptionPane.YES_NO_OPTION);
+            if (confirm == JOptionPane.YES_OPTION) {
+                DefaultTableModel model = (DefaultTableModel) eventTable.getModel();
+                model.removeRow(selectedRow);
+                unsavedChanges = true;
+            } else {
+                //wenn "No" gewählt wurde, geschieht nichts. Dialogfenster schließt einfach.
+            } 
+        } else {
+                JOptionPane.showMessageDialog(this, "Please click on the row you want to delete.", "Hint", JOptionPane.INFORMATION_MESSAGE);
+            }
+    }
+
+    //*****************//
+    //      EXIT       //
+    //*****************//
+
+    //sollte der Nutzer Änderungen nicht gespeichert haben und die Anwendung verlassen, frage nach, ob Änderungen gespeichert werden sollen
+    public void confirmExit() {
+        //sollte es keine ungespeicherten Änderungen geben, kann man das Programm einfach verlassen
+        if (!unsavedChanges) {
+            System.exit(0);
+            return;
+        }
+
+        int exitOption = JOptionPane.showOptionDialog(null, "You have unsaved changes. Save changes before exiting?", "Unsaved Changes", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null, new Object[] {"Save", "Don't Save", "Cancel"}, "Save");
+        //Option: Speichern
+        if (exitOption == 0) {
+            if (lastPath != null) {
+                saveTable(eventTable, lastPath);
+            }
+            System.exit(0);
+        //Option: nicht speichern
+        } else if (exitOption == 1){
+            System.exit(0);
+        } else {
+            //nichts tun
+        }
+    }
 
     //-------------------------------------------//
     //               HAUPTFENSTER                //
@@ -334,7 +391,7 @@ public void loadTable(JTable table, String filePath) {
         saveButton.addActionListener(e ->  {String selectedPath = customSaveFile(this); if (selectedPath != null) {saveTable(eventTable, selectedPath);}});
         
         JButton exitButton = new JButton("Exit");
-        exitButton.addActionListener(e -> dispose());
+        exitButton.addActionListener(e -> confirmExit());
         
         
 
