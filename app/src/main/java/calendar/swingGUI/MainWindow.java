@@ -389,6 +389,9 @@ public void loadTable(JTable table, String filePath) {
         //Buttons
         JButton saveButton = new JButton("Save");
         saveButton.addActionListener(e ->  {String selectedPath = customSaveFile(this); if (selectedPath != null) {saveTable(eventTable, selectedPath);}});
+
+        JButton deleteButton = new JButton("Delete");
+        deleteButton.addActionListener(e -> deleteRow());
         
         JButton exitButton = new JButton("Exit");
         exitButton.addActionListener(e -> confirmExit());
@@ -420,6 +423,7 @@ public void loadTable(JTable table, String filePath) {
         //Buttons
         JPanel buttonPanel = new JPanel();
         buttonPanel.add(saveButton);
+        buttonPanel.add(deleteButton);
         buttonPanel.add(exitButton);
         add(buttonPanel, BorderLayout.SOUTH);
 
