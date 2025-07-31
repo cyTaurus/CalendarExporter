@@ -103,5 +103,63 @@ public class FileUtils {
             //nichts tun, im Programm bleiben
         }
     }
+
+    //*************//
+    //   IMPORT    //
+    //*************//
+
+    //importiere existierene .CSV-Datei, sd. man nicht gebunden ist an die zuletzt gespeicherte Datei
+    public static void openCSV(MainWindow window) {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Choose file to open");
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("CSV-Dateien","csv");
+        fileChooser.setFileFilter(filter);
+
+        int selection = fileChooser.showOpenDialog(window);
+
+        if (selection == JFileChooser.APPROVE_OPTION) {
+            File chosenFile = fileChooser.getSelectedFile();
+            String filePath = chosenFile.getAbsolutePath();
+
+            if (isValid(chosenFile, window)) {
+                TableUtils.loadTable(window.getEventTable(), filePath);
+                window.setLastPath(filePath);
+            } else {
+                JOptionPane.showMessageDialog(window, "Invalid .csv file!", "Invalid file", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    } 
+    
+    //überprüfe, ob die .CSV-Datei auch tatsächlich für dieses Programm gedacht ist
+    public static boolean isValid(File file, MainWindow window) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+
+            String[] expected = {"Ereignis", "Von", "Bis", "Beschreibung"};
+
+            String firstLine = reader.readLine();
+
+              if (firstLine == null) {
+                return false;
+            }
+
+            String[] header = firstLine.split(",");
+
+            if (header.length !=  expected.length) {
+                JOptionPane.showMessageDialog(window, "Unexpected number of columns!", "Error", JOptionPane.ERROR_MESSAGE);
+                return false;
+            }
+
+            for (int i = 0; i < expected.length; i++) {
+                if (!header[i].equals(expected[i])) {
+                    JOptionPane.showMessageDialog(window, "Invalid file!", "Error", JOptionPane.ERROR_MESSAGE);
+                    return false;
+                }
+            }
+
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+    }
     
 }
