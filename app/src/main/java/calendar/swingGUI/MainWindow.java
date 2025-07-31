@@ -1,332 +1,75 @@
 package calendar.swingGUI;
 
-import java.awt.Color;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+
+import java.awt.Color;
 import java.awt.Dimension;
-//import java.awt.event.*;
-import java.util.List;
-import com.google.api.services.calendar.model.Event;
-import com.google.api.client.googleapis.json.GoogleJsonResponseException;
-import com.google.api.client.util.DateTime;
-import com.google.api.services.calendar.Calendar;
+import java.awt.BorderLayout;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
 
-import java.util.Date;
-import calendar.GoogleServices;
-
-import java.awt.Component;
-
-import java.awt.BorderLayout;
+import calendar.swingGUI.GUIutils.*;
 
 
 public class MainWindow extends JFrame {
-    
-    //-------------------------------------------//
-    //               METHODEN                    //
-    //-------------------------------------------//
 
     //********************//
     // Instanzvariablen   //
     //********************//
 
-    //Tabelle
+    // ---- Tabelle ---- //
     private DefaultTableModel tableModel;
     private JTable eventTable; 
-    
-    //Pfad zur zuletzt gespeicherten CSV Datei
-    private String lastPath;
-    
-    private boolean unsavedChanges = false;
 
-    //besagt, dass noch kein Settings-Fenster geöffnet ist
-    private Settings settingsWindow = null;
-    //besagt, dass noch kein About-Fenster geöffnet ist
-    private About aboutWindow = null;
-
-    //********************//
-    //      Settings      //
-    //********************//
-
-    //Settings öffnen. Es muss geprüft werden, ob ein Settings Window schon auf ist, ansonsten kann ein User die Fenster beliebig oft öffnen
-    private void openSettings() {
-        if (settingsWindow == null || !settingsWindow.isDisplayable()) {
-            settingsWindow = new Settings(this);
-        } else {
-            settingsWindow.toFront();
-            settingsWindow.requestFocus();
-        }
+    public JTable getEventTable() {                     
+        return eventTable;
     }
 
-    //********************//
-    //      About         //
-    //********************//
+    // ---- Settings ---- //
+    private Settings settingsWindow = null;              //besagt, dass noch kein Settings-Fenster geöffnet ist
 
-    //About öffnen. Es muss geprüft werden, ob ein About Window schon auf ist, ansonsten kann ein User die Fenster beliebig oft öffnen
-    private void openAbout() {
-        if (aboutWindow == null || !aboutWindow.isDisplayable()) {
-            aboutWindow = new About();
-        } else {
-            aboutWindow.toFront();
-            aboutWindow.requestFocus();
-        }
+    public Settings getSettingsWindow() {               
+        return settingsWindow;
     }
 
-    //********************//
-    //      Tabelle       //
-    //********************//
+    public void setSettingsWindow(Settings window) {   
+        this.settingsWindow = window;
+    }
 
-    //Anzeigen der Events in der Tabelle
-    public void updateTable(List<Event> events) {
-       DefaultTableModel model = (DefaultTableModel) eventTable.getModel();
+    // ---- About ---- //
+    private About aboutWindow = null;                   //besagt, dass noch kein About-Fenster geöffnet ist
 
-        for (Event event : events) {
-            //prüfe, ob start bzw. end ganztägig sind. Wenn ja: getDateTime. Wenn nein: getDate. 
-            String start = (event.getStart().getDateTime() != null) ? event.getStart().getDateTime().toStringRfc3339() : event.getStart().getDate().toStringRfc3339();
-            String end = (event.getEnd().getDateTime() != null) ? event.getEnd().getDateTime().toStringRfc3339() : event.getEnd().getDate().toStringRfc3339();
-            //prüfe, ob es eine Summary bzw. eine Description gibt. Wenn ja: Summary bzw. Description wird geholt. Wenn nein: schreibe einen leeren String (Vermeidung NullPointerExceptions)
-            String summary = event.getSummary() != null ? event.getSummary() : "";
-            String description = event.getDescription() != null ? event.getDescription() : "";
-            //neue Zeile mit Startdatum, Enddatum, Summary und Description zur Tabelle hinzufügen
-            model.addRow(new Object[] {start, end, summary, description});
-        }
+    public About getAboutWindow() {                               
+        return aboutWindow;
+    }
+
+    public void setAboutWindow(About window) {                     
+        this.aboutWindow = window;
+    }
+
+    // ---- Saved Path ---- //
+    private String lastPath;                            //lastPath speichert den Pfad der zuletzt gespeicherten Datei
+
+    public String getLastPath() {                               
+        return lastPath;
+    }
+
+    public void setLastPath(String path) {                       
+        this.lastPath = path;
+    }
+
+    // ---- Unsaved Changes ---- //
+    public boolean unsavedChanges = false;              //beim Öffnen der Anwendung sind noch keine Änderungen aufgetreten, die man speichern müsste
+
+    public boolean getUnsavedChanges() {                        
+        return unsavedChanges;
     } 
 
-    //Methode, um die Events aus dem Kalender zu holen
-    public void fetchData(String calendarId, Date start, Date end) {
-        try {
-            //Zugang zu Google Kalender
-            Calendar service = GoogleServices.getCalendarService();
-            //Umwandlung der Daten in DateTime, sd. die API sie verwenden kann
-            DateTime startDate = new DateTime(start);
-            DateTime endDate = new DateTime(end);
-
-            //holt alle Events basierend auf den Übergabewerten
-            List<Event> events = GoogleServices.fetchEvents(service, calendarId, startDate, endDate);
-            //Übergabe der Daten an updateTable
-            updateTable(events);
-        } catch (GoogleJsonResponseException e) {
-            //prüfe auf invalide Kalender-ID
-            if (e.getStatusCode() == 404) {
-                JOptionPane.showMessageDialog(null, "Calendar-ID is not valid!", "Error", JOptionPane.ERROR_MESSAGE);
-            } else {
-                e.printStackTrace();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public void setUnsavedChanges(boolean unsavedChanges) {    
+        this.unsavedChanges = unsavedChanges;
     }
 
-    //*********************//
-    // Speichern und Laden //
-    //*********************//
-
-    //Tabelleninhalt speichern 
-    public void saveTable(JTable table, String filePath) {
-    //öffne die Datei zum Schreiben, sowie die Spalten und Zeilen aus der Tabelle
-    try (BufferedWriter fileWriter = new BufferedWriter(new FileWriter(filePath))) {
-        TableModel model = table.getModel();
-        int columnCount = model.getColumnCount();
-        int rowCount = model.getRowCount();
-
-        //speichert die Überschriften der Spalten
-        for (int i = 0; i < columnCount; i++) {
-            fileWriter.write(model.getColumnName(i));
-            if (i < columnCount - 1) fileWriter.write(",");
-        }
-        fileWriter.newLine();
-
-        //Iteration über jede Zelle in der Tabelle
-        for (int row = 0; row < rowCount; row++) {
-            for (int col = 0; col < columnCount; col++) {
-                //holt den Inhalt einer Zelle. Wenn sie leer ist (zB bei Beschreibungen), dann speichere darin einen leeren String (um NullPointerExceptions zu vermeiden)
-                Object value = model.getValueAt(row, col);
-                String safe = (value != null) ? value.toString() : "";  
-                //Wenn in der Zelle ein Komma steht, dann ...
-                if (safe.contains(",")) {
-                    safe = "\"" + safe.replace("\"", "\"\"") + "\"";
-                }
-                //schreibt den Zelleninhalt in die Datei. Am Ende jeder Zelle (bis auf die letzte Spalte) wird ein Komma eingefügt für erhöhte Lesbarkeit
-                fileWriter.write(safe);
-                if (col < columnCount - 1) fileWriter.write(",");
-            }
-            fileWriter.newLine();
-        }
-
-        System.out.println("Table saved in: " + filePath);
-        unsavedChanges = false;
-    } catch (IOException e) {
-        e.printStackTrace();
-    }
-}
-
-
-//lädt gespeicherte Daten
-public void loadTable(JTable table, String filePath) {
-        //prüfe, ob die Datei existiert. Wenn nicht, einfach Methode beenden.
-        File file = new File(filePath);
-        if (!file.exists()) return;
-
-        //öffne und lese die Datei
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            //hole die tabelle
-            DefaultTableModel model = (DefaultTableModel) eventTable.getModel();
-            //model.setRowCount(0);
-            //eine Zeile in der Datei 
-            String line;
-            //Spaltenüberschrift
-            boolean firstLine = true;
-
-            //lese jede Zeile, bis es keine mehr gibt
-            while ((line = reader.readLine()) != null) {
-                //Spaltenüberschrift muss nicht extra nochmal geladen werden, diese ist bei der Tabelle fest mit dabei. firstLine ist damit "abgehakt"
-                if (firstLine) {
-                    firstLine = false;
-                    continue;
-                }
-                //jede Zeile in der CSV-Datei wird nach einem Komma gespalten. Die -1 ist nötig, damit auch leere Zellen beibehalten werden
-                String[] values = line.split(",", -1); 
-                //prüfe, ob weniger Spalten befüllt sind, als die erwarteten vier
-                if (values.length < model.getColumnCount()) {
-                    //erstelle ein Array mit der passenden Spaltenanzahl
-                    String[] fill = new String[model.getColumnCount()];
-                    //kopiere alle Werte in das Array fill
-                    System.arraycopy(values, 0, fill, 0, values.length);
-                    //füge die gefüllte Zeile zu der Tabelle hinzu
-                    model.addRow(fill);
-                } else {
-                //wenn alle Spalten befüllt sind, kann man die Werte direkt in die Zeile einfügen
-                model.addRow(values);
-                }
-            }
-            System.out.println("Table loaded!");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    //*****************//
-   //  File Chooser  //
-   //****************//
-
-   //der Nutzer soll den Speicherort und Namen der Datei selber wählen können
-   public String customSaveFile(Component parent) {
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Select storage location");
-
-        FileNameExtensionFilter filter = new FileNameExtensionFilter("CSV-Dateien","csv");
-        fileChooser.setFileFilter(filter);
-
-        int userSelection = fileChooser.showSaveDialog(parent); 
-
-        if (userSelection == JFileChooser.APPROVE_OPTION) {
-            File saveFile = fileChooser.getSelectedFile();
-            String filePath = saveFile.getAbsolutePath();
-
-            if (!filePath.endsWith(".csv")) {
-                filePath += ".csv";
-            }
-            saveTable(eventTable, filePath);
-            writeLastPath(filePath);
-            return filePath;
-            
-        } 
-        return null; //Abbruch
-    }
-
-   //*****************//
-   //  Path to File   //
-   //*****************//
-
-    //Speichern des vom Nutzer gewähltem Pfad zur CSV Datei
-    public void writeLastPath(String path) {
-        //die Datei soll aufgrund von Übersicht in einen data-Folder
-        //dieser wird erstmal erstellt, sollte er noch nicht existieren
-        File dir = new File("data");
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
-        //in data wird lastpath.txt erstellt. Dieser enthält den Pfad zur CSV-Datei
-        File lastPathFile = new File(dir, "lastpath.txt");
-
-
-        try (BufferedWriter pathWrite = new BufferedWriter(new FileWriter(lastPathFile))) {
-            pathWrite.write(path);
-        } catch (IOException e) {
-        e.printStackTrace();
-        }  
-    } 
-
-    //laden der CSV Datei vom gespeicherten Pfad
-    public String readLastPath() {
-        File lastPathFile = new File("data/lastpath.txt");
-        if (!lastPathFile.exists()) return null;
-
-        try (BufferedReader pathReader = new BufferedReader(new FileReader(lastPathFile))) {
-            return pathReader.readLine();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    //*****************//
-    //    LÖSCHEN      //
-    //*****************//
-
-    //Zeile aus Tabelle löschen
-    private void deleteRow() {
-        int selectedRow = eventTable.getSelectedRow();
-
-        //sicherstellen, dass Nutzer die Zeile auch wirklich löschen möchte
-        if (selectedRow != -1) {
-            int confirm = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete the selected row?", "Confirm Delete", JOptionPane.YES_NO_OPTION);
-            if (confirm == JOptionPane.YES_OPTION) {
-                DefaultTableModel model = (DefaultTableModel) eventTable.getModel();
-                model.removeRow(selectedRow);
-                unsavedChanges = true;
-            } else {
-                //wenn "No" gewählt wurde, geschieht nichts. Dialogfenster schließt einfach.
-            } 
-        } else {
-                JOptionPane.showMessageDialog(this, "Please click on the row you want to delete.", "Hint", JOptionPane.INFORMATION_MESSAGE);
-            }
-    }
-
-    //*****************//
-    //      EXIT       //
-    //*****************//
-
-    //sollte der Nutzer Änderungen nicht gespeichert haben und die Anwendung verlassen, frage nach, ob Änderungen gespeichert werden sollen
-    public void confirmExit() {
-        //sollte es keine ungespeicherten Änderungen geben, kann man das Programm einfach verlassen
-        if (!unsavedChanges) {
-            System.exit(0);
-            return;
-        }
-
-        int exitOption = JOptionPane.showOptionDialog(null, "You have unsaved changes. Save changes before exiting?", "Unsaved Changes", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null, new Object[] {"Save", "Don't Save", "Cancel"}, "Save");
-        //Option: Speichern
-        if (exitOption == 0) {
-            if (lastPath != null) {
-                saveTable(eventTable, lastPath);
-            }
-            System.exit(0);
-        //Option: nicht speichern
-        } else if (exitOption == 1){
-            System.exit(0);
-        } else {
-            //nichts tun
-        }
-    }
 
     //-------------------------------------------//
     //               HAUPTFENSTER                //
@@ -355,7 +98,7 @@ public void loadTable(JTable table, String filePath) {
 
         //Menü zu Settings
         JMenuItem settings = new JMenuItem("Settings");
-        settings.addActionListener(e -> openSettings()); //beim Settings-Feld einen Action Listener registrieren
+        settings.addActionListener(e -> WindowUtils.openSettings(this)); //beim Settings-Feld einen Action Listener registrieren
         
 
     //-------------------------------------------//
@@ -367,7 +110,7 @@ public void loadTable(JTable table, String filePath) {
         
          //Menü zu About
         JMenuItem about = new JMenuItem("About");
-        about.addActionListener(e -> openAbout()); 
+        about.addActionListener(e -> WindowUtils.openAbout(this)); 
         
 
     //-------------------------------------------//
@@ -379,22 +122,22 @@ public void loadTable(JTable table, String filePath) {
         eventTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS); 
         
         //Tabellendaten laden aus letzter gespeicherter Datei
-          String lastPath = readLastPath();
+          String lastPath = FileUtils.readLastPath();
         if (lastPath != null && new File(lastPath).exists()) {
-            loadTable(eventTable, lastPath);
+            TableUtils.loadTable(eventTable, lastPath);
         } else {
             System.out.println("Keine gespeicherte Datei gefunden");
         }
 
         //Buttons
         JButton saveButton = new JButton("Save");
-        saveButton.addActionListener(e ->  {String selectedPath = customSaveFile(this); if (selectedPath != null) {saveTable(eventTable, selectedPath);}});
+        saveButton.addActionListener(e ->  {String selectedPath = FileUtils.customSaveFile(this); if (selectedPath != null) {TableUtils.saveTable(this, eventTable, selectedPath);}});
 
         JButton deleteButton = new JButton("Delete");
-        deleteButton.addActionListener(e -> deleteRow());
+        deleteButton.addActionListener(e -> TableUtils.deleteRow(this));
         
         JButton exitButton = new JButton("Exit");
-        exitButton.addActionListener(e -> confirmExit());
+        exitButton.addActionListener(e -> FileUtils.confirmExit(this));
         
         
 

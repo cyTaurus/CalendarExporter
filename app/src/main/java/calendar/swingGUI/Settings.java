@@ -1,11 +1,14 @@
 package calendar.swingGUI;
 
+import java.util.Date;
+
 import java.awt.Color;
 import java.awt.Dimension;
-import java.util.Date;
+import java.awt.BorderLayout;
+
 import javax.swing.*;
 
-import java.awt.BorderLayout;
+import calendar.swingGUI.GUIutils.*;
 
 
 public class Settings extends JFrame {
@@ -113,7 +116,7 @@ public class Settings extends JFrame {
             return;
         }
 
-        parent.fetchData(calendarId, start, end);
+        TableUtils.fetchData(parent,calendarId, start, end);
         dispose();
     }
 }
