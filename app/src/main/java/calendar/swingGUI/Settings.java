@@ -82,12 +82,6 @@ public class Settings extends JFrame {
         buttonPanel.add(cancelButton);
         add(buttonPanel, BorderLayout.SOUTH);
 
-       
-        
-        
-
-      
-
 
         //Settings ausgeben
         this.pack();

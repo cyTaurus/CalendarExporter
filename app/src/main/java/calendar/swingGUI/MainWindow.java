@@ -90,12 +90,11 @@ public class MainWindow extends JFrame {
         JMenuBar menuBar = new JMenuBar();
         menuBar.setOpaque(true);
         menuBar.setBackground(Color.BLUE);
-        menuBar.setPreferredSize(new Dimension(900, 90));
+        menuBar.setPreferredSize(new Dimension(900, 50));
 
         //Menü (Application)
         JMenu menuApp = new JMenu("Application");
         
-
         //Menü zu Settings
         JMenuItem settings = new JMenuItem("Settings");
         settings.addActionListener(e -> WindowUtils.openSettings(this)); //beim Settings-Feld einen Action Listener registrieren
@@ -108,9 +107,14 @@ public class MainWindow extends JFrame {
         //Menü (Help)
         JMenu menuHelp = new JMenu("Help");
         
-         //Menü zu About
+        //Menü zu About
         JMenuItem about = new JMenuItem("About");
         about.addActionListener(e -> WindowUtils.openAbout(this)); 
+
+        //Menü (Open)
+        JMenu menuImport = new JMenu("Import");
+        JMenuItem open = new JMenuItem("Open file");
+        open.addActionListener(e -> FileUtils.openCSV(this));
         
 
     //-------------------------------------------//
@@ -122,7 +126,7 @@ public class MainWindow extends JFrame {
         eventTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS); 
         
         //Tabellendaten laden aus letzter gespeicherter Datei
-          String lastPath = FileUtils.readLastPath();
+        lastPath = FileUtils.readLastPath();
         if (lastPath != null && new File(lastPath).exists()) {
             TableUtils.loadTable(eventTable, lastPath);
         } else {
@@ -153,6 +157,8 @@ public class MainWindow extends JFrame {
         this.setJMenuBar(menuBar);
         menuBar.add(menuApp);
         menuApp.add(settings);
+        menuBar.add(menuImport);
+        menuImport.add(open);
         menuBar.add(menuHelp);
         menuHelp.add(about);
 
