@@ -131,7 +131,7 @@ public class MainWindow extends JFrame {
 
         //Buttons
         JButton saveButton = new JButton("Save");
-        saveButton.addActionListener(e ->  {String selectedPath = FileUtils.customSaveFile(this); if (selectedPath != null) {TableUtils.saveTable(this, eventTable, selectedPath);}});
+        saveButton.addActionListener(e ->  FileUtils.saveStorage(this));
 
         JButton deleteButton = new JButton("Delete");
         deleteButton.addActionListener(e -> TableUtils.deleteRow(this));

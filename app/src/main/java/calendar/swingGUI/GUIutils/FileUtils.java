@@ -161,5 +161,24 @@ public class FileUtils {
             return false;
         }
     }
+
+    //*****************//
+    //  SAVE LOCATION  //
+    //*****************//
+
+    //entscheide, wie die Datei gespeichert werden soll
+    public static void saveStorage(MainWindow window) {
+        String path = window.getLastPath();
+
+        if (path != null) {
+            TableUtils.saveTable(window, window.getEventTable(), path);     //wenn die Datei schon existiert, einfach überschreiben
+        } else {
+            String selectedPath = customSaveFile(window);                   //neue Datei: öffne File Chooser
+            if (selectedPath != null) {                                     //speichern nur durchführen, wenn auch wirklich ein Pfad ausgewählt, d.h. nicht abgebrochen wurde o.ä.
+                TableUtils.saveTable(window, window.getEventTable(), selectedPath);
+            }
+        
+        }
+    }
     
 }
