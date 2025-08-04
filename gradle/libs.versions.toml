@@ -3,6 +3,8 @@
 
 [versions]
 guava = "33.4.5-jre"
+flatlaf = "3.6"
 
 [libraries]
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
+flatlaf = { module = "com.formdev:flatlaf", version.ref = "flatlaf" }

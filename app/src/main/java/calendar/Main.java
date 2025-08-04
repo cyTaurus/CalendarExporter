@@ -12,10 +12,13 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 
 import calendar.swingGUI.MainWindow;
+import calendar.swingGUI.GUIutils.DesignUtils;
 
 
 public class Main {
   public static void main(String[] args) throws IOException, GeneralSecurityException {
+
+    DesignUtils.flatLaf();
 
   //-------------------------------------------//
   //                 SWING                     //
