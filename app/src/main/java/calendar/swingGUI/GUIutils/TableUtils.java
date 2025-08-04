@@ -12,8 +12,12 @@ import java.util.List;
 
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
+
+import java.awt.Component;
 
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.util.DateTime;
@@ -91,6 +95,7 @@ public class TableUtils {
                     model.addRow(fill);
                 } else {
                 model.addRow(values);
+                render(table);
                 }
             }
             System.out.println("Table loaded!");
@@ -112,6 +117,7 @@ public class TableUtils {
             String description = event.getDescription() != null ? event.getDescription() : "";
             //füge eine neue Zeile ein 
             model.addRow(new Object[] {summary, start, end, description});
+            render(eventTable);
         }
     }
 
@@ -165,5 +171,45 @@ public class TableUtils {
         //wenn Nutzer auf Delete drückt, ohne eine Reihe ausgewählt zu haben
         JOptionPane.showMessageDialog(window, "Please choose a row to delete", "Hint", JOptionPane.INFORMATION_MESSAGE);
         }
-    }   
+    } 
+    
+    //****************//
+    //    RENDER      //
+    //****************//
+
+    //Tabelle Text Wrap
+
+    private static class CellRenderer extends JTextArea implements TableCellRenderer {
+        public CellRenderer() {
+            setLineWrap(true);
+            setWrapStyleWord(true);
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            setText(value == null ? "" : value.toString());
+
+            setSize(table.getColumnModel().getColumn(column).getWidth(), Short.MAX_VALUE);
+            int preferredHeight = getPreferredSize().height;
+
+            if (table.getRowHeight(row) != preferredHeight) {
+            table.setRowHeight(row, preferredHeight);
+        }
+         return this;
+
+        }
+
+    }
+
+    //wrapper
+    public static void render(JTable table) {
+        TableCellRenderer renderer = new CellRenderer();
+
+        for (int i = 0; i < table.getColumnCount(); i++) {
+            table.getColumnModel().getColumn(i).setCellRenderer(renderer);
+        }
+    }
+
 }
+
+
