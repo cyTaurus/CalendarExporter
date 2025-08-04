@@ -2,7 +2,6 @@ package calendar.swingGUI;
 
 import java.io.File;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.BorderLayout;
 
@@ -79,17 +78,15 @@ public class MainWindow extends JFrame {
         this.setTitle("Calendar-Exporter");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setPreferredSize(new Dimension(900,500));
-        this.setBackground(Color.DARK_GRAY);
         this.setLocationRelativeTo(null);
 
-    //-------------------------------------------//
-    //             MENÜ (APPLICATION)            //
-    //-------------------------------------------//
+    //**************//
+    //     MENÜ     //
+    //**************//
 
         //Menüleiste (allgemeingültig für alle Menüeinträge)
         JMenuBar menuBar = new JMenuBar();
         menuBar.setOpaque(true);
-        menuBar.setBackground(Color.BLUE);
         menuBar.setPreferredSize(new Dimension(900, 50));
 
         //Menü (Application)
@@ -100,10 +97,6 @@ public class MainWindow extends JFrame {
         settings.addActionListener(e -> WindowUtils.openSettings(this)); //beim Settings-Feld einen Action Listener registrieren
         
 
-    //-------------------------------------------//
-    //                MENÜ (HELP)                //
-    //-------------------------------------------//
-
         //Menü (Help)
         JMenu menuHelp = new JMenu("Help");
         
@@ -111,19 +104,22 @@ public class MainWindow extends JFrame {
         JMenuItem about = new JMenuItem("About");
         about.addActionListener(e -> WindowUtils.openAbout(this)); 
 
-        //Menü (Open)
+        //Menü (Import)
         JMenu menuImport = new JMenu("Import");
+
+        //Menü zu Open file
         JMenuItem open = new JMenuItem("Open file");
         open.addActionListener(e -> FileUtils.openCSV(this));
         
 
-    //-------------------------------------------//
-    //                 TABELLE                   //
-    //-------------------------------------------//
+    //**************//
+    //   TABELLE    //
+    //**************//
 
         tableModel = new DefaultTableModel(new Object[]{"Ereignis", "Von", "Bis","Beschreibung"},0);
         eventTable = new JTable(tableModel);
         eventTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS); 
+        eventTable.setRowHeight(100);
         
         //Tabellendaten laden aus letzter gespeicherter Datei
         lastPath = FileUtils.readLastPath();
