@@ -18,11 +18,12 @@ import calendar.swingGUI.GUIutils.DesignUtils;
 public class Main {
   public static void main(String[] args) throws IOException, GeneralSecurityException {
 
-    DesignUtils.flatLaf();
 
   //-------------------------------------------//
-  //                 SWING                     //
+  //                 GUI                       //
   //-------------------------------------------//
+
+      DesignUtils.flatLaf();
 
     //Swing MainWindow laden
     SwingUtilities.invokeLater(() -> new MainWindow());

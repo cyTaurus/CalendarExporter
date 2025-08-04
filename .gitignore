@@ -9,6 +9,7 @@ build
 
 # -- Andere Dateien --#
 SavedEvents.csv
+data/lastpath.txt
 
 # --- sensibel ---#
 .src/resources/credentials.json

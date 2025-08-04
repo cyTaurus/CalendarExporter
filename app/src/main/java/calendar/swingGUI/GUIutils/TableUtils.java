@@ -95,7 +95,6 @@ public class TableUtils {
                     model.addRow(fill);
                 } else {
                 model.addRow(values);
-                render(table);
                 }
             }
             System.out.println("Table loaded!");
@@ -132,7 +131,6 @@ public class TableUtils {
             }
                 if (!exists) {
                     model.addRow(new Object[] {summary, start, end, description});
-                    render(eventTable);
                 }
            
         }
@@ -200,11 +198,24 @@ public class TableUtils {
         public CellRenderer() {
             setLineWrap(true);
             setWrapStyleWord(true);
+            setOpaque(true);
         }
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             setText(value == null ? "" : value.toString());
+
+            //Farben bei Auswahl
+            if (isSelected) {
+                setForeground(table.getSelectionForeground());
+                setBackground(table.getSelectionBackground());
+            } else {
+                setForeground(table.getForeground());
+                setBackground(table.getBackground());
+            }
+
+            setFont(table.getFont());
+
 
             setSize(table.getColumnModel().getColumn(column).getWidth(), Short.MAX_VALUE);
             int preferredHeight = getPreferredSize().height;

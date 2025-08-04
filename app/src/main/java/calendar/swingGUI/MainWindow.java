@@ -118,8 +118,11 @@ public class MainWindow extends JFrame {
 
         tableModel = new DefaultTableModel(new Object[]{"Ereignis", "Von", "Bis","Beschreibung"},0);
         eventTable = new JTable(tableModel);
-        eventTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS); 
-        eventTable.setRowHeight(100);
+        TableUtils.render(eventTable);
+        eventTable.setRowSelectionAllowed(true);
+        eventTable.setColumnSelectionAllowed(false);
+        eventTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+       
         
         //Tabellendaten laden aus letzter gespeicherter Datei
         lastPath = FileUtils.readLastPath();
