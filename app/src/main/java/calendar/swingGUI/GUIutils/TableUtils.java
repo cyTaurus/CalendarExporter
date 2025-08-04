@@ -115,9 +115,26 @@ public class TableUtils {
             //prüfe, ob es eine Summary bzw. eine Beschreibung gibt. Wenn ja: Summary bzw. Beschreibung wird geholt. Wenn nein: schreibe einen leeren String
             String summary = event.getSummary() != null ? event.getSummary() : "";
             String description = event.getDescription() != null ? event.getDescription() : "";
-            //füge eine neue Zeile ein 
-            model.addRow(new Object[] {summary, start, end, description});
-            render(eventTable);
+
+            //Überprüfe auf schon vorhandene Events in der Tabelle
+            boolean exists = false;
+
+            for (int i = 0; i < model.getRowCount(); i++) {
+                String summaryExists = (String) model.getValueAt(i, 0);
+                String startExists = (String) model.getValueAt(i, 1);
+                String endExists = (String) model.getValueAt(i, 2);
+                String descExists = (String) model.getValueAt(i, 3);
+
+                if (summary.equals(summaryExists) && start.equals(startExists) && end.equals(endExists) && description.equals(descExists)) {
+                    exists = true;
+                    break;
+                }
+            }
+                if (!exists) {
+                    model.addRow(new Object[] {summary, start, end, description});
+                    render(eventTable);
+                }
+           
         }
     }
 
