@@ -88,7 +88,13 @@ public class TableUtils {
                     firstLine = false;
                     continue;
                 }
-                String[] values = line.split(",", -1); //leere Felder bleiben erhalten, zB die Beschreibung
+                String[] values = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1); //trenne Text bei Komma, aber NUR wenn es außerhalb von einem " "-Block steht, d.h. dann sind wir am Ende eines Strings
+
+                for (int i = 0; i < values.length; i++) {
+                    values[i] = values[i].replaceAll("^\"|\"$", "");  
+                    values[i] = values[i].replace("\"\"", "\"");
+                }
+
                 if (values.length < model.getColumnCount()) {
                     String[] fill = new String[model.getColumnCount()];
                     System.arraycopy(values, 0, fill, 0, values.length);
@@ -237,7 +243,6 @@ public class TableUtils {
             table.getColumnModel().getColumn(i).setCellRenderer(renderer);
         }
     }
-
 }
 
 
