@@ -93,22 +93,26 @@ public class MainWindow extends JFrame {
         JMenu menuApp = new JMenu("Application");
         
         //Menü zu Settings
-        JMenuItem settings = new JMenuItem("Settings");
+        ImageIcon settingsIcon = new ImageIcon(getClass().getResource("/icons/settings.png"));
+        JMenuItem settings = new JMenuItem("Settings", settingsIcon);
         settings.addActionListener(e -> WindowUtils.openSettings(this)); //beim Settings-Feld einen Action Listener registrieren
         
 
         //Menü (Help)
         JMenu menuHelp = new JMenu("Help");
+     
         
         //Menü zu About
-        JMenuItem about = new JMenuItem("About");
+        ImageIcon aboutIcon = new ImageIcon(getClass().getResource("/icons/info.png"));
+        JMenuItem about = new JMenuItem("About", aboutIcon);
         about.addActionListener(e -> WindowUtils.openAbout(this)); 
 
         //Menü (Import)
         JMenu menuImport = new JMenu("Import");
 
         //Menü zu Open file
-        JMenuItem open = new JMenuItem("Open file");
+        ImageIcon importIcon = new ImageIcon(getClass().getResource("/icons/folder_open.png"));
+        JMenuItem open = new JMenuItem("Open file", importIcon);
         open.addActionListener(e -> FileUtils.openCSV(this));
         
 
@@ -134,13 +138,17 @@ public class MainWindow extends JFrame {
         }
 
         //Buttons
-        JButton saveButton = new JButton("Save");
+        ImageIcon saveIcon = new ImageIcon(getClass().getResource("/icons/file_save.png"));
+        JButton saveButton = new JButton("Save", saveIcon);
         saveButton.addActionListener(e ->  FileUtils.saveStorage(this));
 
-        JButton deleteButton = new JButton("Delete");
+
+        ImageIcon deleteIcon = new ImageIcon(getClass().getResource("/icons/delete.png"));
+        JButton deleteButton = new JButton("Delete", deleteIcon);
         deleteButton.addActionListener(e -> TableUtils.deleteRow(this));
         
-        JButton exitButton = new JButton("Exit");
+        ImageIcon logoutIcon = new ImageIcon(getClass().getResource("/icons/logout.png"));
+        JButton exitButton = new JButton("Exit", logoutIcon);
         exitButton.addActionListener(e -> FileUtils.confirmExit(this));
         
         

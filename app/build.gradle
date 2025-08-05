@@ -9,10 +9,11 @@
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     id 'application'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 //da ich ein lokales zweites identisches Projekt habe, für Unabhängigkeit
-group = 'com.CalendarExporter.github'
+//group = 'com.CalendarExporter.github'
 version = '1.0.0'
 
 repositories {
@@ -59,4 +60,11 @@ application {
 java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
+}
+
+shadowJar {
+    exclude 'credentials.json'
+    exclude 'lastpath.txt'
+    exclude '*.ics'
+    
 }

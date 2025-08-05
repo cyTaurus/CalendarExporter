@@ -12,6 +12,7 @@ public class WindowUtils {
 
         if (settings == null || !settings.isDisplayable()) { //wenn die Einstellungen noch nicht geöffnet wurden / geschlossen wurden
             settings = new Settings(window);                 //öffne ein neues Einstellungsfenster
+            window.setSettingsWindow(settings);
         } else {                                             //ansonsten hole das offene Fenster in den Fokus nach vorne
             settings.toFront();
             settings.requestFocus();
@@ -24,6 +25,7 @@ public class WindowUtils {
 
         if (about == null || !about.isDisplayable()) {
             about = new About();
+            window.setAboutWindow(about);
         } else {
             about.toFront();
             about.requestFocus();
