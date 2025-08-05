@@ -118,16 +118,17 @@ public class MainWindow extends JFrame {
 
         tableModel = new DefaultTableModel(new Object[]{"Ereignis", "Von", "Bis","Beschreibung"},0);
         eventTable = new JTable(tableModel);
-        TableUtils.render(eventTable);
-        eventTable.setRowSelectionAllowed(true);
-        eventTable.setColumnSelectionAllowed(false);
-        eventTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        TableUtils.render(eventTable);                                      //render-Methode sorgt für Textumbruch in Tabellen-Zelle
+        eventTable.setRowSelectionAllowed(true);        //erlaubt Auswahl von Zeile trotz eigenem Rendering       
+        eventTable.setColumnSelectionAllowed(false); //Spalten sollen nicht ausgewählt werden können
+        eventTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);   //es soll jeweils nur eine Zeile gleichzeitig ausgewählt werden können
        
         
         //Tabellendaten laden aus letzter gespeicherter Datei
         lastPath = FileUtils.readLastPath();
-        if (lastPath != null && new File(lastPath).exists()) {
-            TableUtils.loadTable(eventTable, lastPath);
+        if (lastPath != null && new File(lastPath).exists()) {              
+            TableUtils.loadTable(eventTable, lastPath);                     //letzte gespeicherte Datei in Tabelle laden
+            TableUtils.render(eventTable);
         } else {
             System.out.println("Keine gespeicherte Datei gefunden");
         }

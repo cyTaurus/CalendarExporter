@@ -23,7 +23,7 @@ public class Main {
   //                 GUI                       //
   //-------------------------------------------//
 
-      DesignUtils.flatLaf();
+    DesignUtils.flatLaf();
 
     //Swing MainWindow laden
     SwingUtilities.invokeLater(() -> new MainWindow());
@@ -32,7 +32,7 @@ public class Main {
   //               USER INPUT                  //
   //-------------------------------------------//
 
-    //prüfe, ob alle Argumente korrekt eingegeben wurden
+    //prüfe, ob alle Argumente korrekt eingegeben wurden 
     if (args.length < 3) {
       System.out.println("Syntax: java Main <Startdatum> <Enddatum> <Outputdatei>");
       return;

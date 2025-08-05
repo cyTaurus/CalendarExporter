@@ -6,7 +6,7 @@ import java.awt.Dimension;
 
 import javax.swing.*;
 
-//außer dem Design ist About fertig
+
 
 //-------------------------------------------//
 //               ABOUTFENSTER                //
@@ -28,7 +28,7 @@ public class About extends JFrame{
         JLabel label = new JLabel(aboutText, SwingConstants.CENTER);
         
         
-        //About zusammenbauen
+        //GUI-Elemente
         this.setLayout(new FlowLayout());
         add(label);
         

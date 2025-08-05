@@ -61,8 +61,7 @@ writer.close();
 //das sollte definitiv genau kommentiert werden find ich
  private static String formatToICal(DateTime dt) {
         Instant instant = Instant.ofEpochMilli(dt.getValue());
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss'Z'")
-            .withZone(ZoneOffset.UTC);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss'Z'").withZone(ZoneOffset.UTC);
         return formatter.format(instant);
     }
 }
