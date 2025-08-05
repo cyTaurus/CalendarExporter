@@ -126,6 +126,7 @@ public class MainWindow extends JFrame {
         eventTable.setRowSelectionAllowed(true);        //erlaubt Auswahl von Zeile trotz eigenem Rendering       
         eventTable.setColumnSelectionAllowed(false); //Spalten sollen nicht ausgewählt werden können
         eventTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);   //es soll jeweils nur eine Zeile gleichzeitig ausgewählt werden können
+        eventTable.getTableHeader().setReorderingAllowed(false); //Tabellenspalten sollen durch Nutzer nicht verschoben werden
        
         
         //Tabellendaten laden aus letzter gespeicherter Datei
