@@ -34,7 +34,7 @@ public class Main {
 
     //prüfe, ob alle Argumente korrekt eingegeben wurden 
     if (args.length < 3) {
-      System.out.println("Syntax: java Main <Startdatum> <Enddatum> <Outputdatei>");
+      System.out.println("Syntax: java calendar.Main <Startdatum> <Enddatum> <Outputdatei> <Kalender-ID>");
       return;
     }
 
@@ -42,6 +42,8 @@ public class Main {
     String startDateStr = args[0];
     String endDateStr = args[1];
     String outputFile = args[2];
+    //wenn kein viertes Argument (die Kalender-ID) existiert, dann Id 'primary' (Hauptkalender) nutzen
+    String calendarId = (args.length >= 4) ? args[3] : "primary";
 
   //-------------------------------------------//
   //            DIENSTE / ANDERES              //
@@ -50,7 +52,6 @@ public class Main {
     //Umwandeln der Daten in das DateTime-Format   
     DateTime timeMin = new DateTime(startDateStr + "T00:00:00Z");
     DateTime timeMax = new DateTime(endDateStr + "T23:59:59Z");
-    String calendarId = "primary"; //später dynamisch statt hardcoded
 
 
     //Kalenderdienst
