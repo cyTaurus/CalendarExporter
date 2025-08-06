@@ -37,30 +37,35 @@ public class TableUtils {
     // ---- Tabelleninhalt speichern mit Save-Button ---- //
     public static void saveTable(MainWindow window, JTable table, String filePath) {
     try (BufferedWriter fileWriter = new BufferedWriter(new FileWriter(filePath))) {
+        //man braucht sowohl die ganze Tabelle als auch ihre Spalten und Zeilen, um jede Zelle der Tabelle speichern zu können
         TableModel model = table.getModel();
         int columnCount = model.getColumnCount();
         int rowCount = model.getRowCount();
 
-        
-        for (int i = 0; i < columnCount; i++) {             //speichert die Überschriften der Spalten
+        //speichert die Überschriften der Spalten
+        for (int i = 0; i < columnCount; i++) {             
             fileWriter.write(model.getColumnName(i));
             if (i < columnCount - 1) fileWriter.write(",");
         }
         fileWriter.newLine();
 
-        
-        for (int row = 0; row < rowCount; row++) {          //Iteration über jede Zelle in der Tabelle
+        //Iteration über jede Zelle in der Tabelle
+        for (int row = 0; row < rowCount; row++) {          
             for (int col = 0; col < columnCount; col++) {
-                Object value = model.getValueAt(row, col);
-                String safe = (value != null) ? value.toString() : "";  
-                //Wenn in der Zelle selbst ein Komma steht, dann...
+                //hole Wert aus Zelle
+                Object value = model.getValueAt(row, col); 
+                //wenn die Zelle befüllt ist, zu String formatieren, ansonsten leeren String einfügen. 
+                //wenn eine Zelle leer bleibt, wird sie ignoriert. Dann gibt es eine Spalte weniger und führt zu einem ArrayOutOfBounds.
+                String safe = (value != null) ? value.toString() : ""; 
+                //Wenn in der Zelle selbst ein Komma steht, dann " " drumrum setzen. 
+                //Damit sorgt ein Komma nicht für einen falschen Split des Textes in eine neue Spalte
                 if (safe.contains(",")) {
                     safe = "\"" + safe.replace("\"", "\"\"") + "\"";
                 }
-                fileWriter.write(safe);
-                if (col < columnCount - 1) fileWriter.write(",");
+                fileWriter.write(safe); //eigentliches schreiben, nachdem der Zelleninhalt in safe gespeichert wurde
+                if (col < columnCount - 1) fileWriter.write(","); //solange die Spalte nicht die letzte ist, setze ein Komma, sd. in neue Spalte geschrieben wird. Sonst KEIN komma setzen
             }
-            fileWriter.newLine();
+            fileWriter.newLine(); //nächste Zeile
         }
 
         System.out.println("Tabelle gespeichert in: " + filePath);
@@ -125,20 +130,21 @@ public class TableUtils {
             boolean exists = false;
 
             for (int i = 0; i < model.getRowCount(); i++) {
-                String summaryExists = (String) model.getValueAt(i, 0);
-                String startExists = (String) model.getValueAt(i, 1);
-                String endExists = (String) model.getValueAt(i, 2);
-                String descExists = (String) model.getValueAt(i, 3);
+                //
+                String summaryExists = ((String) model.getValueAt(i, 0)).trim().replace("\"", "");
+                String startExists = ((String) model.getValueAt(i, 1)).trim().replace("\"", "");
+                String endExists = ((String) model.getValueAt(i, 2)).trim().replace("\"", "");
+                String descExists = ((String) model.getValueAt(i, 3)).trim().replace("\"", "");
 
-                if (summary.equals(summaryExists) && start.equals(startExists) && end.equals(endExists) && description.equals(descExists)) {
+                if (summary.trim().replace("\"", "").equals(summaryExists) && start.trim().replace("\"", "").equals(startExists) && end.trim().replace("\"", "").equals(endExists) && description.trim().replace("\"", "").equals(descExists)) {
                     exists = true;
                     break;
                 }
+                
             }
-                if (!exists) {
+                    if (!exists) {
                     model.addRow(new Object[] {summary, start, end, description});
                 }
-           
         }
     }
 
