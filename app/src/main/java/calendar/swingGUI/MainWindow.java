@@ -95,7 +95,7 @@ public class MainWindow extends JFrame {
         //Menü zu Settings
         ImageIcon settingsIcon = new ImageIcon(getClass().getResource("/icons/settings.png"));
         JMenuItem settings = new JMenuItem("Settings", settingsIcon);
-        settings.addActionListener(e -> WindowUtils.openSettings(this)); //beim Settings-Feld einen Action Listener registrieren
+        settings.addActionListener(e -> WindowUtils.openSettings(this)); 
         
 
         //Menü (Help)
@@ -131,11 +131,11 @@ public class MainWindow extends JFrame {
         
         //Tabellendaten laden aus letzter gespeicherter Datei
         lastPath = FileUtils.readLastPath();
-        if (lastPath != null && new File(lastPath).exists()) {              
-            TableUtils.loadTable(eventTable, lastPath);                     //letzte gespeicherte Datei in Tabelle laden
-            TableUtils.render(eventTable);
+        if (lastPath != null && new File(lastPath).exists()) {              //wenn in lastpath was drin steht und die Datei überhaupt existiert          
+            TableUtils.loadTable(eventTable, lastPath);                     //lade die zuletzt gespeicherte Datei in die Tabelle
+            TableUtils.render(eventTable);                                  //die geladene Tabelle hat korrekten Zeilenumbruch
         } else {
-            System.out.println("Keine gespeicherte Datei gefunden");
+            System.out.println("Keine gespeicherte Datei gefunden");      //dann werden keine Daten geladen und die Tabelle ist einfach leer
         }
 
         //Buttons

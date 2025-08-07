@@ -29,13 +29,16 @@ public class Settings extends JFrame {
         this.setResizable(false);
 
 
-        //Datumsauswahl Von
+    // ---- Datumsauswahl Von ---- //
+        //neuer JSpinner, spezifisch für Datum
         SpinnerDateModel startModel = new SpinnerDateModel();
-        startSpinner = new JSpinner(startModel);
-        JSpinner.DateEditor startEditor = new JSpinner.DateEditor(startSpinner, "yyyy-MM-dd");
+        startSpinner = new JSpinner(startModel);  
+        //Editor für tatsächliche Datumseingabe & Format                   
+        JSpinner.DateEditor startEditor = new JSpinner.DateEditor(startSpinner, "yyyy-MM-dd"); 
         startSpinner.setEditor(startEditor);
         
-        //Datumsauswal Bis
+    // ---- Datumsauswal Bis ---- //
+        //wie bei 'Datumsauswahl Von'
         SpinnerDateModel endModel = new SpinnerDateModel();
         endSpinner = new JSpinner(endModel);
         JSpinner.DateEditor endEditor = new JSpinner.DateEditor(endSpinner, "yyyy-MM-dd");
@@ -109,7 +112,7 @@ public class Settings extends JFrame {
             JOptionPane.showMessageDialog(this, "End date cannot be before start date!");
             return;
         }
-
+        //wenn alles stimmt, dann Daten holen
         TableUtils.fetchData(parent,calendarId, start, end);
         dispose();
     }

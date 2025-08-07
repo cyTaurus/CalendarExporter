@@ -12,13 +12,15 @@ import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.model.Event;
 
 public class ICalExport {
-    //das ist ja eig auch ne Methode. Also das entweder runter (eher weniger) oder die Hilfmethode hoch für mehr Ordnung
+   
     public static void writeICal(List<Event> events, String outputFile) throws IOException {
         BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile)); 
 
 //-------------------------------------------//
 //                 WRITER                    //
 //-------------------------------------------//
+
+//folgt dem Schema von RFC2445
 
 writer.write("BEGIN:VCALENDAR\r\n");
 writer.write("VERSION:2.0\r\n");
@@ -39,9 +41,9 @@ DateTime end = googleEvent.getEnd().getDateTime();
 if (end == null) {                                       //wenn end == null, dann ist das Event ganztägig und wir holen nur das Datum
   end = googleEvent.getEnd().getDate();
 }
-writer.write("DTEND:" + formatToICal(end) + "\r\n"); 
+writer.write("DTEND:" + formatToICal(end) + "\r\n");     //wie bei start
 
-writer.write("SUMMARY: " + googleEvent.getSummary() + "\r\n"); 
+writer.write("SUMMARY: " + googleEvent.getSummary() + "\r\n"); //Titel
 
 writer.write("END:VEVENT\r\n");
 }
@@ -57,10 +59,11 @@ writer.close();
   //               METHODEN                    //
   //-------------------------------------------//
 
-//Hilfsmethode zur korrekten Umformatierung der Zeitdaten
-//das sollte definitiv genau kommentiert werden find ich
+//Hilfsmethode zur korrekten Umformatierung der Zeitdaten, Datum Google API -> Format .ics-Standard
  private static String formatToICal(DateTime dt) {
+        //Instant-Objekt (exakter Zeitpunkt) = Zeitstempel des Events in Millisekunden-Genauigkeit
         Instant instant = Instant.ofEpochMilli(dt.getValue());
+        //Umwandlung in String nach .ics-Standard. UTC-Zeitzone muss nochmal spezifiziert werden, weil Instant keine Zeitzonen hat (ohne .withZone wird Systemzeit verwendet)
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss'Z'").withZone(ZoneOffset.UTC);
         return formatter.format(instant);
     }

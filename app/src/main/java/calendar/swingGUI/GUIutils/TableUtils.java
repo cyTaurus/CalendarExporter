@@ -45,6 +45,8 @@ public class TableUtils {
         //speichert die Überschriften der Spalten
         for (int i = 0; i < columnCount; i++) {             
             fileWriter.write(model.getColumnName(i));
+            //solange die Spalte nicht die letzte ist, setze ein Komma, sd. in neue Spalte geschrieben wird. Sonst KEIN komma setzen!
+            //Kommas dienen bei CSV-Dateien als Spaltentrennung
             if (i < columnCount - 1) fileWriter.write(",");
         }
         fileWriter.newLine();
@@ -57,15 +59,17 @@ public class TableUtils {
                 //wenn die Zelle befüllt ist, zu String formatieren, ansonsten leeren String einfügen. 
                 //wenn eine Zelle leer bleibt, wird sie ignoriert. Dann gibt es eine Spalte weniger und führt zu einem ArrayOutOfBounds.
                 String safe = (value != null) ? value.toString() : ""; 
-                //Wenn in der Zelle selbst ein Komma steht, dann " " drumrum setzen. 
+                //Wenn in der Zelle selbst ein Komma steht, dann " " um Text setzen. 
                 //Damit sorgt ein Komma nicht für einen falschen Split des Textes in eine neue Spalte
                 if (safe.contains(",")) {
                     safe = "\"" + safe.replace("\"", "\"\"") + "\"";
                 }
-                fileWriter.write(safe); //eigentliches schreiben, nachdem der Zelleninhalt in safe gespeichert wurde
-                if (col < columnCount - 1) fileWriter.write(","); //solange die Spalte nicht die letzte ist, setze ein Komma, sd. in neue Spalte geschrieben wird. Sonst KEIN komma setzen
+                //eigentliches schreiben, nachdem der Zelleninhalt in safe gespeichert wurde
+                fileWriter.write(safe); 
+                //solange die Spalte nicht die letzte ist, setze ein Komma, sd. in neue Spalte geschrieben wird. Sonst KEIN komma setzen!
+                if (col < columnCount - 1) fileWriter.write(","); 
             }
-            fileWriter.newLine(); //nächste Zeile
+            fileWriter.newLine(); 
         }
 
         System.out.println("Tabelle gespeichert in: " + filePath);
@@ -78,33 +82,61 @@ public class TableUtils {
     // ---- Tabelle laden  ---- //
     public static void loadTable(JTable table, String filePath) {
     
-
+        //Dateiobjekt für übergebenen Pfad
         File file = new File(filePath);
+        //falls keine Datei zum laden existiert, Methode beenden
         if (!file.exists()) return;
 
+        //lesen der Zeilen
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             DefaultTableModel model = (DefaultTableModel) table.getModel();
+            //alter Tabelleninhalt wird gelöscht, bevor neue Daten geladen werden
+            //damit vermeidet man, dass beim laden Termine einer offenen Datei hinzugefügt werden
             model.setRowCount(0);
             String line;
-            boolean firstLine = true;
+            //Header
+            boolean header = true;
 
+            //lese solange, bis keine Zeile mehr zum Einlesen vorhanden ist
             while ((line = reader.readLine()) != null) {
-                if (firstLine) {
-                    firstLine = false;
+                //Header überspringen, da dieser ja sowieso schon immer vorhanden ist und nicht in die Tabelle selbst soll
+                if (header) {
+                    header = false;
                     continue;
                 }
-                String[] values = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1); //trenne Text bei Komma, aber NUR wenn es außerhalb von einem " "-Block steht, d.h. dann sind wir am Ende eines Strings
+                //trenne Text bei Komma, aber NUR wenn es außerhalb von einem " "-Block steht
+                //Bedingung: nach einem Komma folgt das Muster:
+                // es folgt eine beliebige Anzahl von " - Paaren
+                //es folgen bis zum Ende keine weiteren (einzelnen) " (sonst: ungerade Anzahl " -> kein gültiger Split-Punkt)
+                //-------------------------------------------------------------------------------------------------------------------------------------------------
+                // SPLIT: "a", "b", "c" (nach Komma 1 folgen 4 ", nach Komma 2 folgen 2 " -> geschlossener String -> Komma splittet)
+                // KEIN SPLIT: "a", "b, c" (nach Komma 1 folgen 2 ", also nach a splitten, ABER nach Komma 2 folgt ein einzelnes " -> gehört zusammen, kein split)
+                //-------------------------------------------------------------------------------------------------------------------------------------------------
+                //-1 sorgt dafür, dass leere Spalte nicht verloren geht. Stattdessen kommt da ein leerer String rein.
+                String[] values = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1); 
 
+                //sorgt beim laden für bessere Lesbarkeit
                 for (int i = 0; i < values.length; i++) {
-                    values[i] = values[i].replaceAll("^\"|\"$", "");  
+                    //entfernt äußere Anführungszeichen
+                    //Zelleninhalt: hallo, "Welt"
+                    //beim Speichern: "hallo, ""Welt"""
+                    //beim laden: hallo, ""Welt""
+                    values[i] = values[i].replaceAll("^\"|\"$", ""); 
+                    //ersetzt doppelte Anführungszeichen mit nur einem
+                    //also: hallo, "Welt"
                     values[i] = values[i].replace("\"\"", "\"");
                 }
 
+                //wenn nicht alle Zellen befüllt sind
                 if (values.length < model.getColumnCount()) {
+                    //erstelle ein Array 'fill' mit der korrekten Spaltenanzahl der Tabelle
                     String[] fill = new String[model.getColumnCount()];
+                    //kopiere vorhandene Werte hinein, der Rest bleibt 0 -> leer
                     System.arraycopy(values, 0, fill, 0, values.length);
+                    //das fill Array als Reihe hinzufügen
                     model.addRow(fill);
                 } else {
+                //wenn alle 4 Spalten befüllt sind, dann kann man direkt die Reihe hinzufügen
                 model.addRow(values);
                 }
             }
@@ -130,13 +162,20 @@ public class TableUtils {
             boolean exists = false;
 
             for (int i = 0; i < model.getRowCount(); i++) {
-                //
-                String summaryExists = ((String) model.getValueAt(i, 0)).trim().replace("\"", "");
-                String startExists = ((String) model.getValueAt(i, 1)).trim().replace("\"", "");
-                String endExists = ((String) model.getValueAt(i, 2)).trim().replace("\"", "");
-                String descExists = ((String) model.getValueAt(i, 3)).trim().replace("\"", "");
+                //in der Tabelle existierende Events. Sie müssen so angepasst werden, dass KEINE Unterschiede zum tatsächlichen Zelleninhalt auftretten
+                //d.h. Leerzeichen anfangs oder am Ende mit trim entfernen
+                //ersetze doppelte Anführungszeichen durch ein einzelnes
+                String summaryExists = ((String) model.getValueAt(i, 0)).trim().replaceAll("\"\"", "\"");
+                String startExists = ((String) model.getValueAt(i, 1)).trim().replaceAll("\"\"", "\"");
+                String endExists = ((String) model.getValueAt(i, 2)).trim().replaceAll("\"\"", "\"");
+                String descExists = ((String) model.getValueAt(i, 3)).trim().replaceAll("\"\"", "\"");
 
-                if (summary.trim().replace("\"", "").equals(summaryExists) && start.trim().replace("\"", "").equals(startExists) && end.trim().replace("\"", "").equals(endExists) && description.trim().replace("\"", "").equals(descExists)) {
+                //wenn ein einzufügendes Event übereinstimmt mit einem vorhandenen Event, überspringe das (erneute) Hinzufügen dieses Events
+                if (summary.trim().replace("\"\"", "\"").equals(summaryExists) 
+                    && start.trim().replace("\"\"", "\"").equals(startExists) 
+                    && end.trim().replace("\"\"", "\"").equals(endExists) 
+                    && description.trim().replace("\"\"", "\"").equals(descExists)) {
+
                     exists = true;
                     break;
                 }
@@ -185,14 +224,17 @@ public class TableUtils {
         int selectedRow = table.getSelectedRow();
         
         //nachfragen, ob User auch wirklich löschen will
+        //wenn eine Zeile ausgewählt wurde, frage nach Bestätigung
         if (selectedRow != -1) {
         int response = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete the selected row?", "Confirm Delete", JOptionPane.YES_NO_OPTION);
+        //wird YES gewählt
+        //dann wird die ausgewählte Reihe gelöscht
         if (response == JOptionPane.YES_OPTION) {
             DefaultTableModel model = (DefaultTableModel) table.getModel();
             model.removeRow(selectedRow);
             window.setUnsavedChanges(true); 
         } else {
-        //nichts tun eigentlich
+        //nichts tun 
         }
     }  else {
         //wenn Nutzer auf Delete drückt, ohne eine Reihe ausgewählt zu haben
@@ -204,17 +246,24 @@ public class TableUtils {
     //    RENDER      //
     //****************//
 
-    //Tabelle Text Wrap
-
+    
+    // --- Nested Class: Cell Renderer ---- //
+    //CellRenderer erbt von TableCellRenderer
     private static class CellRenderer extends JTextArea implements TableCellRenderer {
         public CellRenderer() {
+            //Zeilenumbruch
             setLineWrap(true);
+            //Umbruch nicht mitten im Wort
             setWrapStyleWord(true);
+            //wichtig fürs Erscheinen von Hintergrundfarbe beim Auswählen einer Zeile
             setOpaque(true);
         }
 
+        //default Renderverhalten von getTableCellRenderer überschreiben mit custom Verhalten
         @Override
+        //Aufruf Methode bei Anzeige einer Zelle
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            //wenn Zelle leer ist: leerer String, ansonsten zu String konvertieren
             setText(value == null ? "" : value.toString());
 
             //Farben bei Auswahl
@@ -228,23 +277,31 @@ public class TableUtils {
 
             setFont(table.getFont());
 
-
+            //passt Zeilenhöhe an Textumbruch an
+            //getPreferredHeight braucht die maximal verfügbare Spaltenbreite, um zu entscheiden, wo ein Umbruch passieren soll
+            //bei keiner Angabe = unendlich viel Platz in einer Spalte -> kein Umbruch
             setSize(table.getColumnModel().getColumn(column).getWidth(), Short.MAX_VALUE);
+            //preferredHeight: wie hoch die Zelle sein muss, damit der Text trotz Umbruch sichtbar ist
             int preferredHeight = getPreferredSize().height;
 
+            //wenn die Zeile nicht so hoch ist, wie sie sein müsste
             if (table.getRowHeight(row) != preferredHeight) {
+            //passe an
             table.setRowHeight(row, preferredHeight);
         }
+        //Rückgabe der 'korrekt' gerenderten Tabelle
          return this;
 
         }
 
     }
 
-    //wrapper
+    // ---- Rendern der Tabelle, sd. Zellen bei viel Text breiter werden ---- //
     public static void render(JTable table) {
         TableCellRenderer renderer = new CellRenderer();
 
+        //durch Spalten laufen und custom rendering anwenden
+        //
         for (int i = 0; i < table.getColumnCount(); i++) {
             table.getColumnModel().getColumn(i).setCellRenderer(renderer);
         }
