@@ -167,14 +167,14 @@ public class TableUtils {
                 //ersetze doppelte Anführungszeichen durch ein einzelnes
                 String summaryExists = ((String) model.getValueAt(i, 0)).trim().replaceAll("\"\"", "\"");
                 String startExists = ((String) model.getValueAt(i, 1)).trim().replaceAll("\"\"", "\"");
-                String endExists = ((String) model.getValueAt(i, 2)).trim().replaceAll("\"\"", "\"");
+                String endExists = ((String) model.getValueAt(i, 2)).trim().replaceAll("\"\"", "\"");   //Problemstelle
                 String descExists = ((String) model.getValueAt(i, 3)).trim().replaceAll("\"\"", "\"");
 
                 //wenn ein einzufügendes Event übereinstimmt mit einem vorhandenen Event, überspringe das (erneute) Hinzufügen dieses Events
-                if (summary.trim().replace("\"\"", "\"").equals(summaryExists) 
-                    && start.trim().replace("\"\"", "\"").equals(startExists) 
-                    && end.trim().replace("\"\"", "\"").equals(endExists) 
-                    && description.trim().replace("\"\"", "\"").equals(descExists)) {
+                if (summary.trim().replaceAll("\"\"", "\"").equals(summaryExists) 
+                    && start.trim().replaceAll("\"\"", "\"").equals(startExists) 
+                    && end.trim().replaceAll("\"\"", "\"").equals(endExists) 
+                    && description.trim().replaceAll("\"\"", "\"").equals(descExists)) {
 
                     exists = true;
                     break;
@@ -213,6 +213,28 @@ public class TableUtils {
             e.printStackTrace();
         }
     } 
+
+    // ---- neue Tabelle ---- //
+    public static void newTable(MainWindow window, JTable table) {
+            int option = JOptionPane.showConfirmDialog(null, "Create new file? Unsaved changes will be lost!", "Create new file",  JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+
+            //Cancel
+            if (option == 1) {
+                return; //abbrechen 
+            //speichern und neu     
+        } else if (option == 0) {
+            //saveTable(window, window.getEventTable(),window.getLastPath());
+            TableUtils.clearTable(window, table);
+        }     
+}
+
+    // ---- Tabelle leeren ---- //
+    public static void clearTable(MainWindow window, JTable table) {
+        DefaultTableModel model = (DefaultTableModel) table.getModel();
+        model.setRowCount(0);
+        window.setLastPath(null); 
+        window.setUnsavedChanges(true); 
+    }
 
 
     //****************//

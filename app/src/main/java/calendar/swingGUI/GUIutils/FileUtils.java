@@ -106,6 +106,8 @@ public class FileUtils {
         if (confirm == 0) {
             if (path != null) {
                 TableUtils.saveTable(window, window.getEventTable(), path);
+            } else {
+                FileUtils.customSaveFile(window);
             }
             //nach dem Speichern kann das Programm schließen
             System.exit(0);                     

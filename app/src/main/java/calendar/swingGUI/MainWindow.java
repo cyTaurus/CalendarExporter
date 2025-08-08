@@ -1,9 +1,11 @@
 package calendar.swingGUI;
 
 import java.io.File;
-
+import java.io.IOException;
 import java.awt.Dimension;
 import java.awt.BorderLayout;
+
+import java.io.FileWriter;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -50,12 +52,25 @@ public class MainWindow extends JFrame {
     // ---- Saved Path ---- //
     private String lastPath;                            //lastPath speichert den Pfad der zuletzt gespeicherten Datei
 
-    public String getLastPath() {                               
+    public String getLastPath() {                            
         return lastPath;
     }
 
     public void setLastPath(String path) {                       
         this.lastPath = path;
+
+        //im Setter, um zu vermeiden, jedes Mal nach einem setLastPath die Methode aufrufen zu müssen
+        //könnte und sollte man eigentlich ändern
+        //falls es bei Abgabe noch hier steht, dann ist irgenwas explodiert oder so
+        try (FileWriter writer = new FileWriter("data/lastpath.txt")) {
+            if (path != null) {
+                writer.write(path);
+            } else {
+                writer.write("");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     // ---- Unsaved Changes ---- //
@@ -143,6 +158,10 @@ public class MainWindow extends JFrame {
         JButton saveButton = new JButton("Save", saveIcon);
         saveButton.addActionListener(e ->  FileUtils.saveStorage(this));
 
+        ImageIcon newIcon = new ImageIcon(getClass().getResource("/icons/add.png"));
+        JButton newButton = new JButton("New", newIcon);
+        newButton.addActionListener(e -> TableUtils.newTable(this, eventTable));
+
 
         ImageIcon deleteIcon = new ImageIcon(getClass().getResource("/icons/delete.png"));
         JButton deleteButton = new JButton("Delete", deleteIcon);
@@ -181,6 +200,7 @@ public class MainWindow extends JFrame {
         //Buttons
         JPanel buttonPanel = new JPanel();
         buttonPanel.add(saveButton);
+        buttonPanel.add(newButton);
         buttonPanel.add(deleteButton);
         buttonPanel.add(exitButton);
         add(buttonPanel, BorderLayout.SOUTH);
