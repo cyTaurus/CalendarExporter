@@ -177,8 +177,8 @@ public class TableUtils {
                 //auch hier müssen die Werte in den 'originalen' Variablen, die Kommas und Anführungszeichen beinhalten genau wie oben ersetzt werden
                 //ansonsten klappt der Vergleich mit equals nicht
                 if (summary.trim().replaceAll("\"\"", "\"").equals(summaryExists) 
-                    && start.trim().replaceAll("\"\"", "\"").equals(startExists) 
-                    && end.trim().replaceAll("\"\"", "\"").equals(endExists) 
+                    && prettyDate(start).trim().replaceAll("\"\"", "\"").equals(startExists) 
+                    && prettyDate(end).trim().replaceAll("\"\"", "\"").equals(endExists) 
                     && description.trim().replaceAll("\"\"", "\"").equals(descExists)) {
 
                     exists = true;
