@@ -61,7 +61,7 @@ public class TableUtils {
                 String safe = (value != null) ? value.toString() : ""; 
                 //Wenn in der Zelle selbst ein Komma steht, dann " " um Text setzen. 
                 //Damit sorgt ein Komma nicht für einen falschen Split des Textes in eine neue Spalte
-                if (safe.contains(",")) {
+                if (safe.contains(",") || safe.contains("\"")) {
                     safe = "\"" + safe.replace("\"", "\"\"") + "\"";
                 }
                 //eigentliches schreiben, nachdem der Zelleninhalt in safe gespeichert wurde
