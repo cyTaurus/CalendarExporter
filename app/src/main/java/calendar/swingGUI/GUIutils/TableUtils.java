@@ -6,7 +6,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.List;
 
@@ -167,10 +170,12 @@ public class TableUtils {
                 //ersetze doppelte Anführungszeichen durch ein einzelnes
                 String summaryExists = ((String) model.getValueAt(i, 0)).trim().replaceAll("\"\"", "\"");
                 String startExists = ((String) model.getValueAt(i, 1)).trim().replaceAll("\"\"", "\"");
-                String endExists = ((String) model.getValueAt(i, 2)).trim().replaceAll("\"\"", "\"");   //Problemstelle
+                String endExists = ((String) model.getValueAt(i, 2)).trim().replaceAll("\"\"", "\"");   
                 String descExists = ((String) model.getValueAt(i, 3)).trim().replaceAll("\"\"", "\"");
 
                 //wenn ein einzufügendes Event übereinstimmt mit einem vorhandenen Event, überspringe das (erneute) Hinzufügen dieses Events
+                //auch hier müssen die Werte in den 'originalen' Variablen, die Kommas und Anführungszeichen beinhalten genau wie oben ersetzt werden
+                //ansonsten klappt der Vergleich mit equals nicht
                 if (summary.trim().replaceAll("\"\"", "\"").equals(summaryExists) 
                     && start.trim().replaceAll("\"\"", "\"").equals(startExists) 
                     && end.trim().replaceAll("\"\"", "\"").equals(endExists) 
@@ -182,10 +187,13 @@ public class TableUtils {
                 
             }
                     if (!exists) {
-                    model.addRow(new Object[] {summary, start, end, description});
+                    String prettyStart = prettyDate(start);
+                    String prettyEnd = prettyDate(end);
+                    model.addRow(new Object[] {summary, prettyStart, prettyEnd, description});
                 }
         }
     }
+
 
     // ---- holen der Daten ---- //
     public static void fetchData(MainWindow window, String calendarId, Date start, Date end) {
@@ -326,6 +334,17 @@ public class TableUtils {
         //
         for (int i = 0; i < table.getColumnCount(); i++) {
             table.getColumnModel().getColumn(i).setCellRenderer(renderer);
+        }
+    }
+
+    //zum leserlichen Darstellen der Daten in der Tabelle
+    private static String prettyDate(String input) {
+        try {
+            OffsetDateTime odt = OffsetDateTime.parse(input);
+            return odt.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
+        } catch (DateTimeParseException e) {
+            LocalDate ld = LocalDate.parse(input);
+            return ld.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
         }
     }
 }

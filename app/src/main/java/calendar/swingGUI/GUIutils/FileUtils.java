@@ -135,6 +135,7 @@ public class FileUtils {
         int selection = fileChooser.showOpenDialog(window);
 
         if (selection == JFileChooser.APPROVE_OPTION) {
+            //Pfad der zu speichernden Datei
             File chosenFile = fileChooser.getSelectedFile();
             String filePath = chosenFile.getAbsolutePath();
 
@@ -166,7 +167,7 @@ public class FileUtils {
             //Header korrekt nach Komma splitten
             String[] header = firstLine.split(",");
 
-            //wenn sich die Datei im Header in irgendeiner Weise unterscheided, kann sie nicht valide sein
+            //wenn sich die Datei im Header in irgendeiner Weise unterscheidet, kann sie nicht valide sein
             //das gilt auch für andere Dateiformate, weil sie nach einem Komma nicht so wie bei CSV eine Spalte teilen
 
             if (header.length !=  expected.length) {
